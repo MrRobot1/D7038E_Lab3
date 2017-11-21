@@ -137,7 +137,7 @@ class Game extends BaseAppState {
     static final float MAX_VELOCITY_Y = 5;
     
     static final float FRICTION_COEFFICIENT = 0.02f;
-    static final float GRAVITY_ACCELERATION = 9.82f;
+    static final float GRAVITY_ACCELERATION = 9.8f;
     
     static final float FRICTION_NUMBER = 0.998f;
     
