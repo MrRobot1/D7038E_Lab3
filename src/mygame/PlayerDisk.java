@@ -6,6 +6,8 @@
 package mygame;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.font.BitmapFont;
+import com.jme3.font.BitmapText;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -23,21 +25,34 @@ public class PlayerDisk extends Disk{
     //private int score;
     private ArrayList<KeyTrigger> keys = new ArrayList<KeyTrigger>();
     public final float MAX_SPEED = 150f;
+    String id;
+    BitmapText playerText;
+    BitmapFont playerFont;
     
-    public PlayerDisk(float radius, float height, ColorRGBA color, Vector2f position, Vector2f velocity, ArrayList<KeyTrigger> keys,AssetManager assetManager){
+    public PlayerDisk(float radius, float height, ColorRGBA color, Vector2f position, Vector2f velocity, ArrayList<KeyTrigger> keys,AssetManager assetManager, String id){
         
         super(radius, height, color, position, velocity, assetManager);
-        
         this.keys = keys;
+        this.id = id;
         
-        Box markerMesh = new Box(1,8,1);
-        Geometry markerGeo = new Geometry("FramePart", markerMesh);
-        Material markerMat = new Material(this.assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        markerMat.setColor("Color", ColorRGBA.White);
-        markerGeo.setMaterial(markerMat);
-        markerGeo.setLocalTranslation(0,0,radius);
+        System.out.println(id);
+        playerFont = assetManager.loadFont("Interface/Fonts/Console.fnt");
+        playerText = new BitmapText(playerFont, false);
+        playerText.setSize(playerFont.getCharSet().getRenderedSize() * 2);      // font size
+        playerText.setColor(ColorRGBA.White);                             // font color
+        playerText.setText(this.id);             // the text
+        playerText.setLocalTranslation(-radius/4f, radius/2f, height); // position
+        this.attachChild(playerText);
+       // this.attachChild();
         
-        this.attachChild(markerGeo);
+        //Box markerMesh = new Box(1,8,1);
+        //Geometry markerGeo = new Geometry("FramePart", markerMesh);
+        //Material markerMat = new Material(this.assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        //markerMat.setColor("Color", ColorRGBA.White);
+        //markerGeo.setMaterial(markerMat);
+       // markerGeo.setLocalTranslation(0,0,height);
+        
+        //this.attachChild(markerGeo);
         
     }
     
@@ -93,6 +108,9 @@ public class PlayerDisk extends Disk{
         }
         
 
+    }
+    public String scorePrint(){
+        return "Player "+ id+ " : "+ this.score;
     }
     
     

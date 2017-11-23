@@ -277,13 +277,12 @@ class Game extends BaseAppState {
         for(int i=0; i<NUMBER_OF_PLAYERS;i++){
             int randomIndex = random.nextInt((NUMBER_OF_PLAYERS ) + 1);
             Vector2f startPosition = playerStartPositions.remove(randomIndex);
-            Disk playerDisk = new PlayerDisk(PLAYER_R, FRAME_THICKNESS-3, ColorRGBA.Blue, startPosition, getRandomVelocity(), keyTriggers.get(i),sapp.getAssetManager());
+            Disk playerDisk = new PlayerDisk(PLAYER_R, FRAME_THICKNESS-3, ColorRGBA.Blue, startPosition, getRandomVelocity(), keyTriggers.get(i),sapp.getAssetManager(), Integer.toString(i+1));
             diskStore.add(playerDisk);
             String leftKey = "left"+Integer.toString(i+1);
             String downKey = "down"+Integer.toString(i+1);
             String rightKey = "right"+Integer.toString(i+1);
             String upKey = "up"+Integer.toString(i+1);
-            
             sapp.getInputManager().addMapping(leftKey, keyTriggers.get(i).get(0));
             sapp.getInputManager().addMapping(downKey, keyTriggers.get(i).get(1));
             sapp.getInputManager().addMapping(rightKey, keyTriggers.get(i).get(2));
@@ -415,12 +414,10 @@ class Game extends BaseAppState {
                 }
             }
         }
-        
-        
-        String text = "I : ";
-        
+        String text = "";
         for(int i=0; i<diskStore.size();i++){ 
             if(diskStore.get(i) instanceof PlayerDisk){
+                
                 text = text + diskStore.get(i).scorePrint() + "\n";
                 
              
