@@ -167,5 +167,65 @@ public class Util {
         }
     }
     
+    /**
+     * ScoreMessage is sent by the server to all clients.
+     *
+     * 
+     */
+    @Serializable
+    public static class ScoreMessage extends MyAbstractMessage {
+
+        public ScoreMessage() {
+        }
+    }
+    
+    
+    /**
+     * TimeMessage is sent by the server to all clients.
+     *
+     * 
+     */
+    @Serializable
+    public static class TimeMessage extends MyAbstractMessage {
+
+        public TimeMessage() {
+        }
+    }
+    
+    
+    /**
+     * GameOverMessage is sent by the server to all clients.
+     *
+     * 
+     */
+    @Serializable
+    public static class GameOverMessage extends MyAbstractMessage {
+
+        public GameOverMessage() {
+        }
+    }
+    
+    
+    /**
+     * Message is sent by a client to all other clients via the server.
+     *
+     * This message instructs all other clients to change the color of their box
+     * to a random color.
+     *
+     * Receiving this message requires a client to send an AcklMessage back via
+     * the server.
+     */
+    @Serializable
+    public static class ChangeVelocityMessage extends MyAbstractMessage {
+
+        public ChangeVelocityMessage() {
+        }
+
+        public ChangeVelocityMessage(int senderID) {
+            this.senderID = senderID;
+        }
+
+    }
+    
     
 }
