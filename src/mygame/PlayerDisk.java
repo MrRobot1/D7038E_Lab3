@@ -34,25 +34,7 @@ public class PlayerDisk extends Disk{
         super(radius, height, color, position, velocity, assetManager);
         this.keys = keys;
         this.id = id;
-        
-        System.out.println(id);
-        playerFont = assetManager.loadFont("Interface/Fonts/Console.fnt");
-        playerText = new BitmapText(playerFont, false);
-        playerText.setSize(playerFont.getCharSet().getRenderedSize() * 2);      // font size
-        playerText.setColor(ColorRGBA.White);                             // font color
-        playerText.setText(this.id);             // the text
-        playerText.setLocalTranslation(-radius/4f, radius/2f, height); // position
-        this.attachChild(playerText);
-       // this.attachChild();
-        
-        //Box markerMesh = new Box(1,8,1);
-        //Geometry markerGeo = new Geometry("FramePart", markerMesh);
-        //Material markerMat = new Material(this.assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        //markerMat.setColor("Color", ColorRGBA.White);
-        //markerGeo.setMaterial(markerMat);
-       // markerGeo.setLocalTranslation(0,0,height);
-        
-        //this.attachChild(markerGeo);
+        playerNumber(this.id, height);
         
     }
     
@@ -111,6 +93,16 @@ public class PlayerDisk extends Disk{
     }
     public String scorePrint(){
         return "Player "+ id+ " : "+ this.score;
+    }
+    
+    private void playerNumber(String id, Float height){
+        playerFont = assetManager.loadFont("Interface/Fonts/Console.fnt");
+        playerText = new BitmapText(playerFont, false);
+        playerText.setSize(playerFont.getCharSet().getRenderedSize() * 2);      // font size
+        playerText.setColor(ColorRGBA.White);                             // font color
+        playerText.setText(this.id);             // the text
+        playerText.setLocalTranslation(-radius/4f, radius/2f, height); // position
+        this.attachChild(playerText);
     }
     
     
