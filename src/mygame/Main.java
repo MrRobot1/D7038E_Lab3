@@ -148,7 +148,6 @@ class Game extends BaseAppState {
     
     private float lastTpf = 0f;
    
-    private final int NUMBER_OF_PLAYERS = 3;
     
     private SimpleApplication sapp;
     private boolean needCleaning = false;
@@ -159,7 +158,7 @@ class Game extends BaseAppState {
     //private Disk negativeDisk;
     private HudText hudText;
     private ArrayList<Disk> diskStore = new ArrayList<Disk>();
-    
+    protected ArrayList<PlayerDisk> players = new ArrayList<PlayerDisk>();
     private ArrayList<ArrayList<KeyTrigger>> keyTriggers = new ArrayList<ArrayList<KeyTrigger>>();
    // private ArrayList<KeyTrigger> player1Keys = new ArrayList<KeyTrigger>();
     //private ArrayList<KeyTrigger> player2Keys = new ArrayList<KeyTrigger>();
@@ -168,6 +167,7 @@ class Game extends BaseAppState {
     private ArrayList<Vector2f> playerStartPositions = new ArrayList<Vector2f>();
     
     private Random random = new Random();
+    
     
    
 
@@ -274,24 +274,8 @@ class Game extends BaseAppState {
         keyTriggers.add(player2Keys);
         keyTriggers.add(player3Keys);
         
-        for(int i=0; i<NUMBER_OF_PLAYERS;i++){
-            int randomIndex = random.nextInt((NUMBER_OF_PLAYERS ) + 1);
-            Vector2f startPosition = playerStartPositions.remove(randomIndex);
-            Disk playerDisk = new PlayerDisk(PLAYER_R, FRAME_THICKNESS-3, ColorRGBA.Blue, startPosition, getRandomVelocity(), keyTriggers.get(i),sapp.getAssetManager());
-            diskStore.add(playerDisk);
-            String leftKey = "left"+Integer.toString(i+1);
-            String downKey = "down"+Integer.toString(i+1);
-            String rightKey = "right"+Integer.toString(i+1);
-            String upKey = "up"+Integer.toString(i+1);
-            
-            sapp.getInputManager().addMapping(leftKey, keyTriggers.get(i).get(0));
-            sapp.getInputManager().addMapping(downKey, keyTriggers.get(i).get(1));
-            sapp.getInputManager().addMapping(rightKey, keyTriggers.get(i).get(2));
-            sapp.getInputManager().addMapping(upKey, keyTriggers.get(i).get(3));
-            
-            new KeyListener((PlayerDisk)playerDisk, leftKey, downKey, rightKey, upKey);
-            topNode.attachChild(playerDisk);
-        }
+        
+        System.out.println("1");
         
         
         //topNode.rotate(-0.75f,0,0);
@@ -305,7 +289,42 @@ class Game extends BaseAppState {
        
        
     }
-
+    public void spawnPlayers(int numberOfPlayers) {
+        for(int i=0; i<numberOfPlayers;i++){
+            int randomIndex = random.nextInt((numberOfPlayers ) + 1);
+            Vector2f startPosition = playerStartPositions.remove(randomIndex);
+            Disk playerDisk = new PlayerDisk(PLAYER_R, FRAME_THICKNESS-3, ColorRGBA.Blue,
+                    startPosition, getRandomVelocity(), keyTriggers.get(0),
+                    sapp.getAssetManager(), "Player"+Integer.toString(i));
+            diskStore.add(playerDisk);
+            players.add((PlayerDisk) playerDisk);
+            
+            String leftKey = "left"+Integer.toString(i+1);
+            String downKey = "down"+Integer.toString(i+1);
+            String rightKey = "right"+Integer.toString(i+1);
+            String upKey = "up"+Integer.toString(i+1);
+            
+      //      sapp.getInputManager().addMapping(leftKey, keyTriggers.get(i).get(0));
+        //    sapp.getInputManager().addMapping(downKey, keyTriggers.get(i).get(1));
+          //  sapp.getInputManager().addMapping(rightKey, keyTriggers.get(i).get(2));
+            //sapp.getInputManager().addMapping(upKey, keyTriggers.get(i).get(3));
+            
+            new KeyListener((PlayerDisk)playerDisk, leftKey, downKey, rightKey, upKey);
+            sapp.getRootNode().attachChild(playerDisk);
+        }
+    }
+    public PlayerDisk getPlayerById(String id) {
+        for (int i=0; i<players.size(); i++) {
+            if (players.get(i).id.equals(id)) {
+                return players.get(i);
+            }
+            
+        }
+        Util.print("Cannot find player");
+        return null;
+    }
+    
+    
     @Override
     protected void onDisable() {
         System.out.println("Game: onDisable");

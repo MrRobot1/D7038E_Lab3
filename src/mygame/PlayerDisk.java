@@ -23,11 +23,12 @@ public class PlayerDisk extends Disk{
     //private int score;
     private ArrayList<KeyTrigger> keys = new ArrayList<KeyTrigger>();
     public final float MAX_SPEED = 150f;
+    public String id;
     
-    public PlayerDisk(float radius, float height, ColorRGBA color, Vector2f position, Vector2f velocity, ArrayList<KeyTrigger> keys,AssetManager assetManager){
+    public PlayerDisk(float radius, float height, ColorRGBA color, Vector2f position, Vector2f velocity, ArrayList<KeyTrigger> keys,AssetManager assetManager, String id){
         
         super(radius, height, color, position, velocity, assetManager);
-        
+        this.id=id;
         this.keys = keys;
         
         Box markerMesh = new Box(1,8,1);

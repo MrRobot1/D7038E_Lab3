@@ -19,14 +19,11 @@ import com.jme3.renderer.RenderManager;
 import com.jme3.system.JmeContext;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import mygame.Util.AckMessage;
-import mygame.Util.ChangeMessage;
-import mygame.Util.HeartAckMessage;
-import mygame.Util.HeartMessage;
-import mygame.Util.MyAbstractMessage;
-import mygame.Util.StartGameMessage;
+import mygame.Util.*;
 
 /**
  * This program demonstrates networking in JMonkeyEngine using SpiderMonkey, and
@@ -40,26 +37,51 @@ public class TheServer extends SimpleApplication {
     private Server server;
     private final int port;
     private float time = 0f;
-    
-    private Game game;
+    private MessageQueue messageQueue = new MessageQueue();
+    private Game game = new Game();
 
-    
+
+    private int numberOfPlayers;
     private boolean running = false;
     public static void main(String[] args) {
         Util.print("Server initializing");
         Util.initialiseSerializables();
         new TheServer(Util.PORT).start(JmeContext.Type.Headless);
+
+
     }
 
     public TheServer(int port) {
         this.port = port;
+        game.setEnabled(true);
+        running=false;
+        stateManager.attach(game);    
 
     }
-    protected void initGame() {
-        game = new Game();
-        game.setEnabled(true);
-        stateManager.attach(game);    
+    protected void initGame(int numberOfPlayers, int numberOfConnections) {
         running=true;
+        System.out.println("2");
+        game.spawnPlayers(numberOfPlayers);
+        String[] playerIDs = new String[numberOfPlayers];
+        String[] yourIDs = new String[3];
+        Vector3f[] startingPositions = new Vector3f[numberOfPlayers];
+        
+        for (int i=0; i<numberOfPlayers; i++) {
+            playerIDs[i] = game.players.get(i).id;
+            startingPositions[i] = game.players.get(i).getLocalTranslation();
+        }
+        for (int i=0; i<numberOfConnections; i++) {
+            yourIDs[0] = playerIDs[i];
+            yourIDs[1] = playerIDs[i+numberOfConnections];
+            yourIDs[2] = playerIDs[i+2*numberOfConnections];
+
+            StartGameMessage m =new StartGameMessage(playerIDs,
+                    yourIDs, startingPositions);
+            m.destinationID = i;
+
+            messageQueue.enqueue(m);
+
+        }
     }
 
     @Override
@@ -82,6 +104,7 @@ public class TheServer extends SimpleApplication {
         Util.print("Server started");
         // create a separat thread for sending "heartbeats" every now and then
         new Thread(new HeartBeatSender()).start();
+        new Thread(new NetWrite()).start();
         server.addMessageListener(new ServerListener(), ChangeMessage.class,
                 AckMessage.class, HeartMessage.class,
                 HeartAckMessage.class);
@@ -102,6 +125,7 @@ public class TheServer extends SimpleApplication {
                 running = false;
                 System.out.println("RestartGameDemo: simpleUpdate "
                         + "(leaving with running==false)");
+                messageQueue.enqueue(new StopGameMessage());
             }
         }
     }
@@ -156,24 +180,40 @@ public class TheServer extends SimpleApplication {
             } */
         }
     }
-    private class MessageQueue {
-        private ArrayList<MyAbstractMessage> queue;
-        public MessageQueue() {
-            queue = new ArrayList<MyAbstractMessage>();
-        }
-        public synchronized void addMessage(MyAbstractMessage m) {
-            this.queue.add(m);
-        }
-    }
+
     
     /**
      * Sends out a heart beat to all clients every TIME_SLEEPING seconds, after
      * first having waited INITIAL_WAIT seconds. .
      */
+    private class NetWrite implements Runnable {
+        public void run() {
+            while(true) {
+                try {
+                    Thread.sleep(10); // ... sleep ...
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+                while (!messageQueue.isEmpty()) {
+                    MyAbstractMessage m = messageQueue.pop();
+                    if (m.destinationID!=-1) {
+                        HostedConnection conn
+                        = TheServer.this.server
+                                .getConnection(m.destinationID);
+                        conn.send(m);
+                    }
+                    else {
+                        server.broadcast(m);
+                    }
+                }
+                
+            }
+        }
+    }
     private class HeartBeatSender implements Runnable {
 
         private final int INITIAL_WAIT = 30000; // time until first loop lap 
-        private final int TIME_SLEEPING = 10000; // timebetween heartbeats
+        private final int TIME_SLEEPING = 20000; // timebetween heartbeats
 
         @Override
         @SuppressWarnings("SleepWhileInLoop")
@@ -186,10 +226,41 @@ public class TheServer extends SimpleApplication {
                     ex.printStackTrace();
                 }
                 Util.print("Sending one heartbeat to each client");
-                server.broadcast(new HeartMessage()); // ... send ...
-                server.broadcast(new StartGameMessage());
+                messageQueue.enqueue(new HeartMessage());
+                
                 Util.print("Starting game,..");
-                initGame();
+                final int numberOfConnections = server.getConnections().size();
+                numberOfPlayers = 3 * numberOfConnections;
+                Future result = TheServer.this.enqueue(new Callable() {
+                    @Override
+                    public Object call() throws Exception {
+                        initGame(numberOfPlayers, numberOfConnections);
+                        return true;
+                    }
+                });
+                //System.out.println(game.players.size());
+                /*
+                String[] playerIDs = new String[numberOfPlayers];
+                String[] yourIDs = new String[numberOfConnections];
+                Vector3f[] startingPositions = new Vector3f[numberOfPlayers];
+                
+                for (int i=0; i<numberOfPlayers; i++) {
+                    playerIDs[i] = game.players.get(i).id;
+                    startingPositions[i] = game.players.get(i).getLocalTranslation();
+                }
+                for (int i=0; i<numberOfConnections; i++) {
+                    yourIDs[0] = playerIDs[i];
+                    yourIDs[1] = playerIDs[i+numberOfConnections];
+                    yourIDs[2] = playerIDs[i+2*numberOfConnections];
+                    
+                    StartGameMessage m =new StartGameMessage(playerIDs,
+                            yourIDs, startingPositions);
+                    m.destinationID = i;
+
+                    messageQueue.enqueue(m);
+                    
+                }
+                */
                 //return;
             }
         }

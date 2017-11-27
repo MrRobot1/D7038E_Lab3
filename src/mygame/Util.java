@@ -5,6 +5,7 @@
  */
 package mygame;
 import com.jme3.app.SimpleApplication;
+import com.jme3.math.Vector3f;
 import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;
 import com.jme3.network.serializing.Serializer;
@@ -33,6 +34,10 @@ public class Util {
         Serializer.registerClass(HeartMessage.class);
         Serializer.registerClass(HeartAckMessage.class);
         Serializer.registerClass(StartGameMessage.class);
+        Serializer.registerClass(StopGameMessage.class);
+        Serializer.registerClass(ChangeVelocityMessage.class);
+        
+
     }
 
     static String getThreadName() {
@@ -48,7 +53,7 @@ public class Util {
     abstract public static class MyAbstractMessage extends AbstractMessage {
 
         protected int senderID;
-
+        protected int destinationID = -1;
         protected int messageID;
         protected static int globalCounter = 1000;
 
@@ -62,6 +67,9 @@ public class Util {
 
         public int getMessageID() {
             return messageID;
+        }
+        public void setDestination(int id) {
+            this.destinationID=id;
         }
 
     }
@@ -148,6 +156,18 @@ public class Util {
     }
     @Serializable
     public static class StartGameMessage extends MyAbstractMessage {
+        String[] playerIDs;
+        String[] yourIDs;
+        Vector3f[] startPositions;
+        
+        public StartGameMessage(String[] playerIDs, String[] yourIDs, Vector3f[] startPositions) {
+            this.playerIDs=playerIDs;
+            this.yourIDs=yourIDs;
+            this.startPositions=startPositions;
+        }
+        
+        
+        
         public StartGameMessage() {
             
         }
@@ -155,4 +175,28 @@ public class Util {
             this.senderID = senderID;
         }
     }
+    @Serializable
+    public static class StopGameMessage extends MyAbstractMessage {
+        public StopGameMessage() {
+            
+        }
+        public StopGameMessage(int senderID) {
+            this.senderID = senderID;
+        }
+    }
+    
+    @Serializable
+    public static class ChangeVelocityMessage extends MyAbstractMessage {
+        String s;
+        public ChangeVelocityMessage() {
+            
+        }
+        public ChangeVelocityMessage(String s) {
+            this.s=s;
+        }
+        //public ChangeVelocityMessage(int senderID) {
+         //   this.senderID = senderID;
+        //}
+
+}
 }

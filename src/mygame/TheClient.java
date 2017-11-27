@@ -2,6 +2,7 @@ package mygame;
 import com.jme3.app.SimpleApplication;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
@@ -31,8 +32,11 @@ public class TheClient extends SimpleApplication {
     // the scene contains just a rotating box
     private final String hostname; // where the server can be found
     private final int port; // the port att the server that we use
-    private Game game = new Game();
+    private Game game;
     private float time = 0f;
+    private PlayerDisk localPlayer1, localPlayer2, localPlayer3;
+    
+    private MessageQueue messageQueue = new MessageQueue();
     
     private boolean running = false;
 
@@ -45,12 +49,20 @@ public class TheClient extends SimpleApplication {
     public TheClient(String hostname, int port) {
         this.hostname = hostname;
         this.port = port;
-    }
-    private void initGame() {
-        game.setEnabled(false);
+        game = new Game();
         game.setEnabled(true);
         stateManager.attach(game);
+        running=false;
+    }
+    private void initGame(int numberOfPlayers) {
+        if (game.isEnabled()) {
+            //game is already enabled
+            //return;
+            
+        }
         running=true;
+        game.spawnPlayers(numberOfPlayers);
+
     }
     @Override
     @SuppressWarnings("CallToPrintStackTrace")
@@ -79,26 +91,16 @@ public class TheClient extends SimpleApplication {
                             AckMessage.class,
                             HeartMessage.class,
                             HeartAckMessage.class,
-                            StartGameMessage.class);
+                            StartGameMessage.class,
+                            StopGameMessage.class,
+                            ChangeVelocityMessage.class);
 
-            // position the cam so the box is clearly visible
-            //cam.setLocation(new Vector3f(0, 0, 10));
-
-            Util.print("Mapping keys");
-            // map two keys, R and T, two names in the strings REVERSE 
-            // and CHANGE
-            // TODO map keys
-            Util.print("Adding key listener");
-            // add a listener that reacts when R or T is pressed
-            //TODO add listeners
+ 
             
-            // make everything continue even if the mouse pointer moves 
-            // outside the window or we give the focus to another window
             setPauseOnLostFocus(false);
             // disable the flycam which also removes the key mappings
             getFlyByCamera().setEnabled(false);
 
-            // finally start the communication channel to the server
             serverConnection.start();
             Util.print("Client communication back to server started");
         } catch (IOException ex) {
@@ -109,45 +111,80 @@ public class TheClient extends SimpleApplication {
 
     }
 
-    /**
-     * actionListener reacts to the two kinds of key presses on the keyboard
-     * that we mapped in simpelInitApp
-     */
-    private final ActionListener actionListener = new ActionListener() {
+        private final AnalogListener analogListener = new AnalogListener() {
         @Override
-        @SuppressWarnings("ConvertToStringSwitch")
-        public void onAction(String name, boolean isPressed, float tpf) {
-            // every key pressed fires two (2) events: when the key is pressed 
-            // and when it is released
-            if (isPressed) { // react when a key is presed (not when released)
-                Util.print("("
-                        + name
-                        + " was pressed by local user)");
-                if (name.equals("TODO")) {
-                    //TODO
-                }
-                else {
-                    // this should not happen because we only have two mappings
-                    throw new RuntimeException("actionListener: "
-                            + "Unknown event, "
-                            + name);
+            public void onAnalog(String name, float value, float tpf) {
+                if (running) {
+                    if(name.equals("Left1")){
+                        localPlayer1.accLeft(tpf,400f);
+
+                    }
+
+                    if(name.equals("Down1")){
+                        localPlayer1.accDown(tpf,400f);
+
+                    }
+
+                    if(name.equals("Right1")){
+                        localPlayer1.accRight(tpf, 400f);
+
+                    }
+
+                    if(name.equals("Up1")){
+                        localPlayer1.accUp(tpf, 400f);
+
+                    }
+                    if(name.equals("Left2")){
+                        localPlayer2.accLeft(tpf,400f);
+
+                    }
+
+                    if(name.equals("Down2")){
+                        localPlayer2.accDown(tpf,400f);
+
+                    }
+
+                    if(name.equals("Right2")){
+                        localPlayer2.accRight(tpf, 400f);
+
+                    }
+
+                    if(name.equals("Up2")){
+                        localPlayer2.accUp(tpf, 400f);
+
+                    }
+                    if(name.equals("Left3")){
+                        localPlayer3.accLeft(tpf,400f);
+
+                    }
+
+                    if(name.equals("Down3")){
+                        localPlayer3.accDown(tpf,400f);
+
+                    }
+
+                    if(name.equals("Right3")){
+                        localPlayer3.accRight(tpf, 400f);
+
+                    }
+
+                    if(name.equals("Up3")){
+                        localPlayer3.accUp(tpf, 400f);
+
+                    }
                 }
             }
-        }
     };
+
+
+  
 
     @Override
     public void simpleUpdate(float tpf) {
        if (running) {
             time = game.getTimeLeft();
-            if (time <= 0) {
-                System.out.println("RestartGameDemo: simpleUpdate "
-                        + "(entering when time is up)");
-                game.setEnabled(false);
+            if (time <= 0) {           
                 time = 0f;
-                running = false;
-                System.out.println("RestartGameDemo: simpleUpdate "
-                        + "(leaving with running==false)");
             }
         }
     }
@@ -162,7 +199,7 @@ public class TheClient extends SimpleApplication {
 
         // this method is called whenever network packets arrive
         @Override
-        public void messageReceived(Client source, Message m) {
+        public void messageReceived(Client source, final Message m) {
             // these if statements is a clumsy but simple (and working) 
             // solution; better would be to code behavour in the message 
             // classes and call them on the message
@@ -223,13 +260,41 @@ public class TheClient extends SimpleApplication {
                  Future result = TheClient.this.enqueue(new Callable() {
                     @Override
                     public Object call() throws Exception {
-                         Util.print("starting game");
-                         initGame();
-                         return true;
+                        int numberOfPlayers = ((StartGameMessage) m).playerIDs.length;
+                        String[] myIDs = ((StartGameMessage) m).yourIDs;
+                        
+                        Util.print("starting game");
+                        initGame(numberOfPlayers);
+                                                
+                        localPlayer1 = game.getPlayerById(myIDs[0]);
+                        localPlayer2 = game.getPlayerById(myIDs[1]);
+                        localPlayer3 = game.getPlayerById(myIDs[2]);
+                        
+                        return true;
                     }
                 });
                
                 
+            }
+            else if (m instanceof StopGameMessage) {
+                 Future result = TheClient.this.enqueue(new Callable() {
+                    @Override
+                    public Object call() throws Exception {
+                         Util.print("stopping game");
+                         game.setEnabled(false);
+                         running=false;
+                         return true;
+                    }
+                });                
+            }else if (m instanceof ChangeVelocityMessage) {
+                 Future result = TheClient.this.enqueue(new Callable() {
+                    @Override
+                    public Object call() throws Exception {
+                         String s=((ChangeVelocityMessage) m).s;
+                         Util.print(s);
+                         return true;
+                    }
+                });                
             }else {
                 // must be a programming error(!)
                 throw new RuntimeException("Unknown message.");
