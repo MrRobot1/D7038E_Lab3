@@ -34,7 +34,7 @@ public class TheClient extends SimpleApplication {
     private Game game = new Game();
     private float time = 0f;
     
-    private boolean running = true;
+    private boolean running = false;
 
     public static void main(String[] args) {
         Util.initialiseSerializables();
@@ -45,11 +45,13 @@ public class TheClient extends SimpleApplication {
     public TheClient(String hostname, int port) {
         this.hostname = hostname;
         this.port = port;
+    }
+    private void initGame() {
+        game.setEnabled(false);
         game.setEnabled(true);
         stateManager.attach(game);
-        System.out.println("asd");
+        running=true;
     }
-
     @Override
     @SuppressWarnings("CallToPrintStackTrace")
     public void simpleInitApp() {
@@ -76,7 +78,8 @@ public class TheClient extends SimpleApplication {
                             ChangeMessage.class,
                             AckMessage.class,
                             HeartMessage.class,
-                            HeartAckMessage.class);
+                            HeartAckMessage.class,
+                            StartGameMessage.class);
 
             // position the cam so the box is clearly visible
             //cam.setLocation(new Vector3f(0, 0, 10));
@@ -216,7 +219,18 @@ public class TheClient extends SimpleApplication {
                 // must be a programming error(!)
                 throw new RuntimeException("Client got HeartAckMessage "
                         + "- should not be possible!");
-            } else {
+            } else if (m instanceof StartGameMessage) {
+                 Future result = TheClient.this.enqueue(new Callable() {
+                    @Override
+                    public Object call() throws Exception {
+                         Util.print("starting game");
+                         initGame();
+                         return true;
+                    }
+                });
+               
+                
+            }else {
                 // must be a programming error(!)
                 throw new RuntimeException("Unknown message.");
             }

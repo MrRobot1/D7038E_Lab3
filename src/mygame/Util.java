@@ -32,6 +32,7 @@ public class Util {
         Serializer.registerClass(AckMessage.class);
         Serializer.registerClass(HeartMessage.class);
         Serializer.registerClass(HeartAckMessage.class);
+        Serializer.registerClass(StartGameMessage.class);
     }
 
     static String getThreadName() {
@@ -142,6 +143,15 @@ public class Util {
 
         public HeartAckMessage(int senderID) {
             // Heartbeat ack sent from this senderID
+            this.senderID = senderID;
+        }
+    }
+    @Serializable
+    public static class StartGameMessage extends MyAbstractMessage {
+        public StartGameMessage() {
+            
+        }
+        public StartGameMessage(int senderID) {
             this.senderID = senderID;
         }
     }

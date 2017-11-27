@@ -25,6 +25,8 @@ import mygame.Util.AckMessage;
 import mygame.Util.ChangeMessage;
 import mygame.Util.HeartAckMessage;
 import mygame.Util.HeartMessage;
+import mygame.Util.MyAbstractMessage;
+import mygame.Util.StartGameMessage;
 
 /**
  * This program demonstrates networking in JMonkeyEngine using SpiderMonkey, and
@@ -39,10 +41,10 @@ public class TheServer extends SimpleApplication {
     private final int port;
     private float time = 0f;
     
-    private Game game = new Game();
+    private Game game;
 
     
-    private boolean running = true;
+    private boolean running = false;
     public static void main(String[] args) {
         Util.print("Server initializing");
         Util.initialiseSerializables();
@@ -51,8 +53,13 @@ public class TheServer extends SimpleApplication {
 
     public TheServer(int port) {
         this.port = port;
+
+    }
+    protected void initGame() {
+        game = new Game();
         game.setEnabled(true);
         stateManager.attach(game);    
+        running=true;
     }
 
     @Override
@@ -149,7 +156,15 @@ public class TheServer extends SimpleApplication {
             } */
         }
     }
-
+    private class MessageQueue {
+        private ArrayList<MyAbstractMessage> queue;
+        public MessageQueue() {
+            queue = new ArrayList<MyAbstractMessage>();
+        }
+        public synchronized void addMessage(MyAbstractMessage m) {
+            this.queue.add(m);
+        }
+    }
     
     /**
      * Sends out a heart beat to all clients every TIME_SLEEPING seconds, after
@@ -172,6 +187,10 @@ public class TheServer extends SimpleApplication {
                 }
                 Util.print("Sending one heartbeat to each client");
                 server.broadcast(new HeartMessage()); // ... send ...
+                server.broadcast(new StartGameMessage());
+                Util.print("Starting game,..");
+                initGame();
+                //return;
             }
         }
     }
