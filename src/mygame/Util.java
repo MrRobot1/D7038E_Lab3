@@ -144,6 +144,19 @@ public class Util {
     
     
      /**
+     * StartGameMessage is sent by the server to all clients.
+     *
+     * 
+     */
+    @Serializable
+    public static class StartGameMessage extends MyAbstractMessage {
+
+        public StartGameMessage() {
+        }
+    }
+    
+    
+     /**
      * VelocityMessage is sent by the server to all clients.
      *
      * 
@@ -207,7 +220,7 @@ public class Util {
     
     
     /**
-     * Message is sent by a client to all other clients via the server.
+     * ChangeVelocityMessage is sent by a client to all other clients via the server.
      *
      * This message instructs all other clients to change the color of their box
      * to a random color.
@@ -219,6 +232,7 @@ public class Util {
     public static class ChangeVelocityMessage extends MyAbstractMessage {
 
         public ChangeVelocityMessage() {
+            
         }
 
         public ChangeVelocityMessage(int senderID) {
