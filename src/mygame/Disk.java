@@ -10,7 +10,7 @@ import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Vector2f;
+import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Cylinder;
@@ -24,9 +24,9 @@ public abstract class Disk extends Node{
     static final int AXIS_SAMPLES = 100;
     static final int RADIAL_SAMPLES = 100;
     
-    private Vector2f position; 
-    protected Vector2f velocity;
-    protected Vector2f acceleration;
+    private Vector3f position; 
+    protected Vector3f velocity;
+    protected Vector3f acceleration;
     protected int score;
     protected float radius;
     private float height;
@@ -44,21 +44,21 @@ public abstract class Disk extends Node{
     Node cylinderNode;
     AssetManager assetManager;
     
-    public Disk(float radius, float height, ColorRGBA color, Vector2f position, Vector2f velocity,AssetManager assetManager){
+    public Disk(float radius, float height, ColorRGBA color, Vector3f position, Vector3f velocity,AssetManager assetManager){
         this.assetManager = assetManager;
         this.radius = radius;
         this.height = height;
         this.color = color;
         this.position = position;
         this.velocity = velocity;
-        this.acceleration = new Vector2f(0,0);
+        this.acceleration = new Vector3f(0,0,0);
         this.mass = (float) Math.PI * radius*radius;
         this.score = 0;
         createDisk(position, color);
         
     }
     
-    private void createDisk(Vector2f position, ColorRGBA color){
+    private void createDisk(Vector3f position, ColorRGBA color){
         
         cylinderMesh = new Cylinder(AXIS_SAMPLES, RADIAL_SAMPLES, radius, height, true);
         cylinderGeo = new Geometry("Cylinder", cylinderMesh);
@@ -77,33 +77,33 @@ public abstract class Disk extends Node{
     }
     
     
-    public void setVelocity(Vector2f velocity){
+    public void setVelocity(Vector3f velocity){
         this.velocity = velocity;
 
     }
     
-    public void setPosition(Vector2f position){
+    public void setPosition(Vector3f position){
         this.position = position;
         
         
         this.setLocalTranslation(position.getX(), position.getY(), height);
     }
     
-    public void setAcceleration(Vector2f acceleration){
+    public void setAcceleration(Vector3f acceleration){
         this.acceleration = acceleration;
         
     }
     
     
-    public Vector2f getVelocity(){
+    public Vector3f getVelocity(){
         return this.velocity;
     }
     
-    public Vector2f getPosition(){
+    public Vector3f getPosition(){
         return this.position;
     }
     
-    public Vector2f getAcceleration(){
+    public Vector3f getAcceleration(){
         return this.acceleration;
     }
     
@@ -123,30 +123,30 @@ public abstract class Disk extends Node{
         return ""+this.score;
     }
     
-    public void checkCollide(Vector2f minCoordinates, Vector2f maxCoordinates){
+    public void checkCollide(Vector3f minCoordinates, Vector3f maxCoordinates){
         
         
         // Lower
         if((this.position.getY()-this.radius) < minCoordinates.getY()){         // negate velocity if lower part of disk is under the lowest part of given parameter
-            this.setPosition(new Vector2f(this.position.getX(), minCoordinates.getY()+this.radius));
+            this.setPosition(new Vector3f(this.position.getX(), minCoordinates.getY()+this.radius,0));
             this.velocity.setY(-this.velocity.getY());
   
         }
         // Upper
         else if((this.position.getY()+this.radius) > maxCoordinates.getY()){
-            this.setPosition(new Vector2f(this.position.getX(), maxCoordinates.getY()-this.radius));
+            this.setPosition(new Vector3f(this.position.getX(), maxCoordinates.getY()-this.radius,0));
             this.velocity.setY(-this.velocity.getY());
 
         }
         // Left
         else if((this.position.getX()-this.radius) < minCoordinates.getX()){
-            this.setPosition(new Vector2f(minCoordinates.getX()+this.radius, this.position.getY()));
+            this.setPosition(new Vector3f(minCoordinates.getX()+this.radius, this.position.getY(),0));
             this.velocity.setX(-this.velocity.getX());
            
         }
         // Right
         else if((this.position.getX()+this.radius) > maxCoordinates.getX()){
-            this.setPosition(new Vector2f(maxCoordinates.getX()-this.radius, this.position.getY()));
+            this.setPosition(new Vector3f(maxCoordinates.getX()-this.radius, this.position.getY(),0));
             this.velocity.setX(-this.velocity.getX());
           
         }
@@ -156,16 +156,16 @@ public abstract class Disk extends Node{
     
 
     
-    public void diskCollision(Disk disk, Vector2f prevVelocityDisk1, Vector2f prevVelocityDisk2, Vector2f positionDisk1, Vector2f positionDisk2){
+    public void diskCollision(Disk disk, Vector3f prevVelocityDisk1, Vector3f prevVelocityDisk2, Vector3f positionDisk1, Vector3f positionDisk2){
        
-        Vector2f disk1Position = positionDisk1;
-        Vector2f disk2Position = positionDisk2;
+        Vector3f disk1Position = positionDisk1;
+        Vector3f disk2Position = positionDisk2;
       
 
                  
-        Vector2f normalVector = new Vector2f(disk2Position.getX()- disk1Position.getX(), disk2Position.getY() -disk1Position.getY());
-        Vector2f unitNormalVector = normalVector.normalize();
-        Vector2f unitTangentVector = new Vector2f(-unitNormalVector.getY(), unitNormalVector.getX());
+        Vector3f normalVector = new Vector3f(disk2Position.getX()- disk1Position.getX(), disk2Position.getY() -disk1Position.getY(),0);
+        Vector3f unitNormalVector = normalVector.normalize();
+        Vector3f unitTangentVector = new Vector3f(-unitNormalVector.getY(), unitNormalVector.getX(),0);
 
      
         float disk1NormalVelocityScalar = unitNormalVector.dot(this.getVelocity());
@@ -178,14 +178,14 @@ public abstract class Disk extends Node{
         float disk2NormalVelocityScalarPrime = ((disk2NormalVelocityScalar*(disk.getMass()- this.getMass())) + (2*this.getMass()*disk1NormalVelocityScalar)) /(this.getMass()+disk.getMass());
 
 
-        Vector2f disk1NormalVelocityVectorPrime = unitNormalVector.mult(disk1NormalVelocityScalarPrime);
-        Vector2f disk1TangentVelocityVectorPrime = unitTangentVector.mult(disk1TangentVelocityScalar);
-        Vector2f disk2NormalVelocityVectorPrime = unitNormalVector.mult(disk2NormalVelocityScalarPrime);
-        Vector2f disk2TangentVelocityVectorPrime = unitTangentVector.mult(disk2TangentVelocityScalar);
+        Vector3f disk1NormalVelocityVectorPrime = unitNormalVector.mult(disk1NormalVelocityScalarPrime);
+        Vector3f disk1TangentVelocityVectorPrime = unitTangentVector.mult(disk1TangentVelocityScalar);
+        Vector3f disk2NormalVelocityVectorPrime = unitNormalVector.mult(disk2NormalVelocityScalarPrime);
+        Vector3f disk2TangentVelocityVectorPrime = unitTangentVector.mult(disk2TangentVelocityScalar);
 
 
-        Vector2f disk1VelocityVectorPrime = disk1NormalVelocityVectorPrime.add(disk1TangentVelocityVectorPrime);
-        Vector2f disk2VelocityVectorPrime = disk2NormalVelocityVectorPrime.add(disk2TangentVelocityVectorPrime);
+        Vector3f disk1VelocityVectorPrime = disk1NormalVelocityVectorPrime.add(disk1TangentVelocityVectorPrime);
+        Vector3f disk2VelocityVectorPrime = disk2NormalVelocityVectorPrime.add(disk2TangentVelocityVectorPrime);
 
 
         this.setVelocity(disk1VelocityVectorPrime);

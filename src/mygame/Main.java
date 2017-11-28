@@ -15,7 +15,7 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
-import com.jme3.math.Vector2f;
+import com.jme3.math.Vector3f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
@@ -47,6 +47,7 @@ public class Main extends SimpleApplication {
         game.setEnabled(true);
         stateManager.attach(game);
         stateManager.attach(ask);
+        game.spawnPlayers(3);
     }
 
     public static void main(String[] args) {
@@ -147,6 +148,8 @@ class Game extends BaseAppState {
     private float timeLeft = 0f;
     
     private float lastTpf = 0f;
+    
+    private Node topNode;
    
     
     private SimpleApplication sapp;
@@ -164,7 +167,7 @@ class Game extends BaseAppState {
     //private ArrayList<KeyTrigger> player2Keys = new ArrayList<KeyTrigger>();
     //private ArrayList<KeyTrigger> player3Keys = new ArrayList<KeyTrigger>();
     
-    private ArrayList<Vector2f> playerStartPositions = new ArrayList<Vector2f>();
+    private ArrayList<Vector3f> playerStartPositions = new ArrayList<Vector3f>();
     
     private Random random = new Random();
     
@@ -200,39 +203,30 @@ class Game extends BaseAppState {
         FreeArea freeArea = new FreeArea(FREE_AREA_WIDTH, ColorRGBA.LightGray, sapp.getAssetManager());
         hudText = new HudText(-FRAME_SIZE, FRAME_SIZE/2, ColorRGBA.White, sapp.getAssetManager());
         
-        ArrayList<Vector2f> negStartPositions = new ArrayList<Vector2f>();
-        ArrayList<Vector2f> posStartPositions = new ArrayList<Vector2f>();
+        ArrayList<Vector3f> negStartPositions = new ArrayList<Vector3f>();
+        ArrayList<Vector3f> posStartPositions = new ArrayList<Vector3f>();
        
         
-        negStartPositions.add(new Vector2f(-POSNEG_BETWEEN_COORD, POSNEG_MAX_COORD));
-        negStartPositions.add(new Vector2f(POSNEG_BETWEEN_COORD, POSNEG_MAX_COORD));
-        negStartPositions.add(new Vector2f(POSNEG_MAX_COORD, POSNEG_BETWEEN_COORD));
-        negStartPositions.add(new Vector2f(POSNEG_MAX_COORD, -POSNEG_BETWEEN_COORD));
-        negStartPositions.add(new Vector2f(POSNEG_BETWEEN_COORD,-POSNEG_MAX_COORD));
-        negStartPositions.add(new Vector2f(-POSNEG_BETWEEN_COORD, -POSNEG_MAX_COORD));
-        negStartPositions.add(new Vector2f(-POSNEG_MAX_COORD, -POSNEG_BETWEEN_COORD));
-        negStartPositions.add(new Vector2f(-POSNEG_MAX_COORD, POSNEG_BETWEEN_COORD));
+        negStartPositions.add(new Vector3f(-POSNEG_BETWEEN_COORD, POSNEG_MAX_COORD,0));
+        negStartPositions.add(new Vector3f(POSNEG_BETWEEN_COORD, POSNEG_MAX_COORD,0));
+        negStartPositions.add(new Vector3f(POSNEG_MAX_COORD, POSNEG_BETWEEN_COORD,0));
+        negStartPositions.add(new Vector3f(POSNEG_MAX_COORD, -POSNEG_BETWEEN_COORD,0));
+        negStartPositions.add(new Vector3f(POSNEG_BETWEEN_COORD,-POSNEG_MAX_COORD,0));
+        negStartPositions.add(new Vector3f(-POSNEG_BETWEEN_COORD, -POSNEG_MAX_COORD,0));
+        negStartPositions.add(new Vector3f(-POSNEG_MAX_COORD, -POSNEG_BETWEEN_COORD,0));
+        negStartPositions.add(new Vector3f(-POSNEG_MAX_COORD, POSNEG_BETWEEN_COORD,0));
         
-        posStartPositions.add(new Vector2f(-POSNEG_MAX_COORD, POSNEG_MAX_COORD));
-        posStartPositions.add(new Vector2f(0, POSNEG_MAX_COORD));
-        posStartPositions.add(new Vector2f(POSNEG_MAX_COORD, POSNEG_MAX_COORD));
-        posStartPositions.add(new Vector2f(POSNEG_MAX_COORD, 0));
-        posStartPositions.add(new Vector2f(POSNEG_MAX_COORD,-POSNEG_MAX_COORD));
-        posStartPositions.add(new Vector2f(0, -POSNEG_MAX_COORD));
-        posStartPositions.add(new Vector2f(-POSNEG_MAX_COORD, -POSNEG_MAX_COORD));
-        posStartPositions.add(new Vector2f(-POSNEG_MAX_COORD, 0));
+        posStartPositions.add(new Vector3f(-POSNEG_MAX_COORD, POSNEG_MAX_COORD,0));
+        posStartPositions.add(new Vector3f(0, POSNEG_MAX_COORD,0));
+        posStartPositions.add(new Vector3f(POSNEG_MAX_COORD, POSNEG_MAX_COORD,0));
+        posStartPositions.add(new Vector3f(POSNEG_MAX_COORD, 0,0));
+        posStartPositions.add(new Vector3f(POSNEG_MAX_COORD,-POSNEG_MAX_COORD,0));
+        posStartPositions.add(new Vector3f(0, -POSNEG_MAX_COORD,0));
+        posStartPositions.add(new Vector3f(-POSNEG_MAX_COORD, -POSNEG_MAX_COORD,0));
+        posStartPositions.add(new Vector3f(-POSNEG_MAX_COORD, 0,0));
+
         
-        playerStartPositions.add(new Vector2f(-POSNEG_BETWEEN_COORD, POSNEG_BETWEEN_COORD));
-        playerStartPositions.add(new Vector2f(0, POSNEG_BETWEEN_COORD));
-        playerStartPositions.add(new Vector2f( POSNEG_BETWEEN_COORD, POSNEG_BETWEEN_COORD));
-        playerStartPositions.add(new Vector2f( POSNEG_BETWEEN_COORD, 0));
-        playerStartPositions.add(new Vector2f( POSNEG_BETWEEN_COORD, -POSNEG_BETWEEN_COORD));
-        playerStartPositions.add(new Vector2f(0, -POSNEG_BETWEEN_COORD));
-        playerStartPositions.add(new Vector2f(-POSNEG_BETWEEN_COORD, -POSNEG_BETWEEN_COORD));
-        playerStartPositions.add(new Vector2f(-POSNEG_BETWEEN_COORD, 0));
-        playerStartPositions.add(new Vector2f(0, 0));
-        
-        Node topNode = new Node("top");
+        topNode = new Node("top");
         DirectionalLight sun = new DirectionalLight();
         sun.setDirection(new Vector3f(1,0,-2).normalizeLocal());
         sun.setColor(ColorRGBA.White);
@@ -249,36 +243,7 @@ class Game extends BaseAppState {
             diskStore.add(positiveDisk);
             topNode.attachChild(positiveDisk);
         }
-        
 
-        ArrayList<KeyTrigger> player1Keys = new ArrayList<KeyTrigger>();
-        player1Keys.add(new KeyTrigger(KeyInput.KEY_F));
-        player1Keys.add(new KeyTrigger(KeyInput.KEY_G));
-        player1Keys.add(new KeyTrigger(KeyInput.KEY_H));
-        player1Keys.add(new KeyTrigger(KeyInput.KEY_T));
-        
-        ArrayList<KeyTrigger> player2Keys = new ArrayList<KeyTrigger>();
-        player2Keys.add(new KeyTrigger(KeyInput.KEY_J));
-        player2Keys.add(new KeyTrigger(KeyInput.KEY_K));
-        player2Keys.add(new KeyTrigger(KeyInput.KEY_L));
-        player2Keys.add(new KeyTrigger(KeyInput.KEY_I));
-        
-        ArrayList<KeyTrigger> player3Keys = new ArrayList<KeyTrigger>();
-        player3Keys.add(new KeyTrigger(KeyInput.KEY_C));
-        player3Keys.add(new KeyTrigger(KeyInput.KEY_V));
-        player3Keys.add(new KeyTrigger(KeyInput.KEY_B));
-        player3Keys.add(new KeyTrigger(KeyInput.KEY_N));
-        
-        
-        keyTriggers.add(player1Keys);
-        keyTriggers.add(player2Keys);
-        keyTriggers.add(player3Keys);
-        
-        
-        System.out.println("1");
-        
-        
-        //topNode.rotate(-0.75f,0,0);
         
         topNode.attachChild(frame);
         topNode.attachChild(freeArea);
@@ -291,26 +256,21 @@ class Game extends BaseAppState {
     }
     public void spawnPlayers(int numberOfPlayers) {
         for(int i=0; i<numberOfPlayers;i++){
-            int randomIndex = random.nextInt((numberOfPlayers ) + 1);
-            Vector2f startPosition = playerStartPositions.remove(randomIndex);
+            float x = (float) Math.random()*2 - 1f;
+            float y = (float) Math.random()*2 - 1f;
+
+            x = Math.round(x);
+            y = Math.round(y); //x and y should now be -1, 0, or 1
+        
+            Vector3f startPosition = new Vector3f(x*PLAYER_COORD, y*PLAYER_COORD,0);
+            
             Disk playerDisk = new PlayerDisk(PLAYER_R, FRAME_THICKNESS-3, ColorRGBA.Blue,
-                    startPosition, getRandomVelocity(), keyTriggers.get(0),
+                    startPosition, getRandomVelocity(),
                     sapp.getAssetManager(), "Player"+Integer.toString(i));
             diskStore.add(playerDisk);
             players.add((PlayerDisk) playerDisk);
-            
-            String leftKey = "left"+Integer.toString(i+1);
-            String downKey = "down"+Integer.toString(i+1);
-            String rightKey = "right"+Integer.toString(i+1);
-            String upKey = "up"+Integer.toString(i+1);
-            
-      //      sapp.getInputManager().addMapping(leftKey, keyTriggers.get(i).get(0));
-        //    sapp.getInputManager().addMapping(downKey, keyTriggers.get(i).get(1));
-          //  sapp.getInputManager().addMapping(rightKey, keyTriggers.get(i).get(2));
-            //sapp.getInputManager().addMapping(upKey, keyTriggers.get(i).get(3));
-            
-            new KeyListener((PlayerDisk)playerDisk, leftKey, downKey, rightKey, upKey);
-            sapp.getRootNode().attachChild(playerDisk);
+
+            topNode.attachChild(playerDisk);
         }
     }
     public PlayerDisk getPlayerById(String id) {
@@ -351,27 +311,27 @@ class Game extends BaseAppState {
             Disk disk1 = diskStore.get(i);
             float velocityX = (disk1.getVelocity().getX())*FRICTION_NUMBER;
             float velocityY = (disk1.getVelocity().getY())*FRICTION_NUMBER; 
-            disk1.setVelocity(new Vector2f(velocityX, velocityY));
+            disk1.setVelocity(new Vector3f(velocityX, velocityY,0));
             
             
             
          
             float positionX = disk1.getPosition().getX() + tpf*disk1.getVelocity().getX();
             float positionY = disk1.getPosition().getY() + tpf*disk1.getVelocity().getY();
-            disk1.setPosition(new Vector2f(positionX, positionY));
-            disk1.checkCollide(new Vector2f(-FREE_AREA_WIDTH/2, -FREE_AREA_WIDTH/2), new Vector2f(FREE_AREA_WIDTH/2,FREE_AREA_WIDTH/2));
+            disk1.setPosition(new Vector3f(positionX, positionY,0));
+            disk1.checkCollide(new Vector3f(-FREE_AREA_WIDTH/2, -FREE_AREA_WIDTH/2,0), new Vector3f(FREE_AREA_WIDTH/2,FREE_AREA_WIDTH/2,0));
             for(int j=i+1; j<diskStore.size();j++){
                 Disk disk2 = diskStore.get(j);
                 if(disk1 != disk2){
                    
                     
                     if(disk1.collidesWithAnotherDisk(disk2)){
-                        Vector2f velocityDisk1 = disk1.getVelocity();
-                        Vector2f velocityDisk2 = disk2.getVelocity();
+                        Vector3f velocityDisk1 = disk1.getVelocity();
+                        Vector3f velocityDisk2 = disk2.getVelocity();
         
                         
-                        Vector2f positionDisk1 = disk1.getPosition();
-                        Vector2f positionDisk2 = disk2.getPosition();
+                        Vector3f positionDisk1 = disk1.getPosition();
+                        Vector3f positionDisk2 = disk2.getPosition();
                         
                  
                         
@@ -408,8 +368,8 @@ class Game extends BaseAppState {
                         float newPositionYDisk2 = disk2.getPosition().getY() - t*velocityDisk2.getY();
                         
                         
-                        Vector2f newPositionDisk1 = new Vector2f(newPositionXDisk1, newPositionYDisk1);
-                        Vector2f newPositionDisk2 = new Vector2f(newPositionXDisk2, newPositionYDisk2);
+                        Vector3f newPositionDisk1 = new Vector3f(newPositionXDisk1, newPositionYDisk1,0);
+                        Vector3f newPositionDisk2 = new Vector3f(newPositionXDisk2, newPositionYDisk2,0);
 
 
                         
@@ -425,8 +385,8 @@ class Game extends BaseAppState {
                         float positiondisk2X = disk2.getPosition().getX() + (t)*disk2.getVelocity().getX();
                         float positiondisk2Y = disk2.getPosition().getY() + (t)*disk2.getVelocity().getY();
                         
-                        disk1.setPosition(new Vector2f(positiondisk1X, positiondisk1Y));
-                        disk2.setPosition(new Vector2f(positiondisk2X, positiondisk2Y));
+                        disk1.setPosition(new Vector3f(positiondisk1X, positiondisk1Y,0));
+                        disk2.setPosition(new Vector3f(positiondisk2X, positiondisk2Y,0));
                     
                     }
                     
@@ -455,23 +415,23 @@ class Game extends BaseAppState {
      
     }
     
-    private Vector2f getVelocityBeforeCollision(Vector2f velocity, Vector2f position){
+    private Vector3f getVelocityBeforeCollision(Vector3f velocity, Vector3f position){
         return velocity;
     }
     
     
-    private Vector2f getRandomVelocity(){
+    private Vector3f getRandomVelocity(){
         float velocityX = MIN_VELOCITY_X + random.nextFloat() * (MAX_VELOCITY_X - MIN_VELOCITY_X);
         float velocityY = MIN_VELOCITY_Y + random.nextFloat() * (MAX_VELOCITY_Y - MIN_VELOCITY_Y);
-        Vector2f velocity = new Vector2f(velocityX, velocityY);
+        Vector3f velocity = new Vector3f(velocityX, velocityY,0);
         
         return velocity;
     }
     
-    private Vector2f getRandomPosition(){
+    private Vector3f getRandomPosition(){
         float positionX = -POSNEG_BETWEEN_COORD + random.nextFloat() * (POSNEG_BETWEEN_COORD + POSNEG_BETWEEN_COORD);
         float positionY = -POSNEG_BETWEEN_COORD + random.nextFloat() * (POSNEG_BETWEEN_COORD + POSNEG_BETWEEN_COORD);
-        Vector2f position = new Vector2f(positionX, positionY);
+        Vector3f position = new Vector3f(positionX, positionY,0);
         
         return position;
     }

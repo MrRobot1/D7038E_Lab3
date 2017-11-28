@@ -8,6 +8,7 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.math.Quaternion;
+import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.network.Filters;
 import com.jme3.network.HostedConnection;
@@ -213,7 +214,7 @@ public class TheServer extends SimpleApplication {
     private class HeartBeatSender implements Runnable {
 
         private final int INITIAL_WAIT = 30000; // time until first loop lap 
-        private final int TIME_SLEEPING = 20000; // timebetween heartbeats
+        private final int TIME_SLEEPING = 25000; // timebetween heartbeats
 
         @Override
         @SuppressWarnings("SleepWhileInLoop")
@@ -242,7 +243,7 @@ public class TheServer extends SimpleApplication {
                 /*
                 String[] playerIDs = new String[numberOfPlayers];
                 String[] yourIDs = new String[numberOfConnections];
-                Vector3f[] startingPositions = new Vector3f[numberOfPlayers];
+                Vector2f[] startingPositions = new Vector2f[numberOfPlayers];
                 
                 for (int i=0; i<numberOfPlayers; i++) {
                     playerIDs[i] = game.players.get(i).id;

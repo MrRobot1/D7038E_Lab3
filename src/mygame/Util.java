@@ -5,6 +5,7 @@
  */
 package mygame;
 import com.jme3.app.SimpleApplication;
+import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.network.AbstractMessage;
 import com.jme3.network.serializing.Serializable;
@@ -35,8 +36,7 @@ public class Util {
         Serializer.registerClass(HeartAckMessage.class);
         Serializer.registerClass(StartGameMessage.class);
         Serializer.registerClass(StopGameMessage.class);
-        Serializer.registerClass(ChangeVelocityMessage.class);
-        
+        Serializer.registerClass(ChangeVelocityMessage.class);        
 
     }
 

@@ -9,7 +9,7 @@ import com.jme3.asset.AssetManager;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Vector2f;
+import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
 import java.util.ArrayList;
@@ -21,15 +21,13 @@ import java.util.ArrayList;
 public class PlayerDisk extends Disk{
     
     //private int score;
-    private ArrayList<KeyTrigger> keys = new ArrayList<KeyTrigger>();
     public final float MAX_SPEED = 150f;
     public String id;
     
-    public PlayerDisk(float radius, float height, ColorRGBA color, Vector2f position, Vector2f velocity, ArrayList<KeyTrigger> keys,AssetManager assetManager, String id){
+    public PlayerDisk(float radius, float height, ColorRGBA color, Vector3f position, Vector3f velocity,AssetManager assetManager, String id){
         
         super(radius, height, color, position, velocity, assetManager);
         this.id=id;
-        this.keys = keys;
         
         Box markerMesh = new Box(1,8,1);
         Geometry markerGeo = new Geometry("FramePart", markerMesh);
@@ -53,10 +51,7 @@ public class PlayerDisk extends Disk{
     public void addToScore(int points){
         score = score + points;
     }
-    
-    public ArrayList<KeyTrigger> getKeys(){
-        return this.keys;
-    }
+
     
     public void accLeft(float tpf, float acceleration){
         

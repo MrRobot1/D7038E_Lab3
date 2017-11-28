@@ -8,7 +8,7 @@ package mygame;
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Vector2f;
+import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Sphere;
@@ -23,7 +23,7 @@ public class PositiveDisk extends Disk {
     private final float MARKER_RADIUS = 1.5f;
     
     
-    public PositiveDisk(float radius, float height, ColorRGBA color, Vector2f position, Vector2f velocity, AssetManager assetManager){
+    public PositiveDisk(float radius, float height, ColorRGBA color, Vector3f position, Vector3f velocity, AssetManager assetManager){
         
         super(radius, height, color, position, velocity, assetManager);
         

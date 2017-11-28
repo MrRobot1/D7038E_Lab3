@@ -7,6 +7,7 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import com.jme3.math.Vector3f;
 import com.jme3.network.Client;
 import com.jme3.network.Message;
 import com.jme3.network.MessageListener;
@@ -54,7 +55,7 @@ public class TheClient extends SimpleApplication {
         stateManager.attach(game);
         running=false;
     }
-    private void initGame(int numberOfPlayers) {
+    private void initGame(int numberOfPlayers, Vector3f[] startingPositions) {
         if (game.isEnabled()) {
             //game is already enabled
             //return;
@@ -62,8 +63,38 @@ public class TheClient extends SimpleApplication {
         }
         running=true;
         game.spawnPlayers(numberOfPlayers);
+        
+        for (int i=0; i<numberOfPlayers; i++) {
+            game.players.get(i).setPosition(startingPositions[i]);
+        }
 
     }
+    private void initKeys() {
+        inputManager.addMapping("Left1",  new KeyTrigger(KeyInput.KEY_A));
+        inputManager.addMapping("Up1",  new KeyTrigger(KeyInput.KEY_W));
+        inputManager.addMapping("Down1",  new KeyTrigger(KeyInput.KEY_S));
+        inputManager.addMapping("Right1",  new KeyTrigger(KeyInput.KEY_D));
+        
+        inputManager.addMapping("Left2",  new KeyTrigger(KeyInput.KEY_F));
+        inputManager.addMapping("Up2",  new KeyTrigger(KeyInput.KEY_T));
+        inputManager.addMapping("Down2",  new KeyTrigger(KeyInput.KEY_G));
+        inputManager.addMapping("Right2",  new KeyTrigger(KeyInput.KEY_H));
+        
+        inputManager.addMapping("Left3",  new KeyTrigger(KeyInput.KEY_J));
+        inputManager.addMapping("Up3",  new KeyTrigger(KeyInput.KEY_I));
+        inputManager.addMapping("Down3",  new KeyTrigger(KeyInput.KEY_K));
+        inputManager.addMapping("Right3",  new KeyTrigger(KeyInput.KEY_L));
+        
+               
+        inputManager.addListener(analogListener, "Left1", "Right1", "Up1", "Down1",
+                "Left2", "Right2", "Up2", "Down2","Left3", "Right3", "Up3", "Down3");
+        
+        
+    }
+    
+    
+    
+    
     @Override
     @SuppressWarnings("CallToPrintStackTrace")
     public void simpleInitApp() {
@@ -262,13 +293,15 @@ public class TheClient extends SimpleApplication {
                     public Object call() throws Exception {
                         int numberOfPlayers = ((StartGameMessage) m).playerIDs.length;
                         String[] myIDs = ((StartGameMessage) m).yourIDs;
-                        
+                        Vector3f[] startingPositions = ((StartGameMessage) m).startPositions;
                         Util.print("starting game");
-                        initGame(numberOfPlayers);
+                        initGame(numberOfPlayers, startingPositions);
                                                 
                         localPlayer1 = game.getPlayerById(myIDs[0]);
                         localPlayer2 = game.getPlayerById(myIDs[1]);
                         localPlayer3 = game.getPlayerById(myIDs[2]);
+                        
+                        initKeys();
                         
                         return true;
                     }

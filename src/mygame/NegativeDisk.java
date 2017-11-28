@@ -7,7 +7,7 @@ package mygame;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Vector2f;
+import com.jme3.math.Vector3f;
 
 /**
  *
@@ -18,7 +18,7 @@ public class NegativeDisk extends Disk {
     private final int REWARD = -3;
     
     
-    public NegativeDisk(float radius, float height, ColorRGBA color, Vector2f position, Vector2f velocity, AssetManager assetManager){
+    public NegativeDisk(float radius, float height, ColorRGBA color, Vector3f position, Vector3f velocity, AssetManager assetManager){
         
         super(radius, height, color, position, velocity, assetManager);
     }
