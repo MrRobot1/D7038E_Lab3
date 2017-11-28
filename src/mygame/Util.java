@@ -156,14 +156,17 @@ public class Util {
     }
     @Serializable
     public static class StartGameMessage extends MyAbstractMessage {
-        String[] playerIDs;
-        String[] yourIDs;
-        Vector3f[] startPositions;
+        String[] playerIDs, yourIDs;
+        Vector3f[] startPositions, startVelocities;
+        float time;
         
-        public StartGameMessage(String[] playerIDs, String[] yourIDs, Vector3f[] startPositions) {
+        public StartGameMessage(String[] playerIDs, String[] yourIDs,
+                Vector3f[] startPositions, Vector3f[] startVelocities, float time) {
             this.playerIDs=playerIDs;
             this.yourIDs=yourIDs;
             this.startPositions=startPositions;
+            this.startVelocities=startVelocities;
+            this.time=time;
         }
         
         

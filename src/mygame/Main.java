@@ -37,7 +37,7 @@ public class Main extends SimpleApplication {
 
     private Ask ask = new Ask();
     private Game game = new Game();
-    private float time = 0f;
+    private float time = 30f;
     
     private boolean running = true;
 
@@ -94,7 +94,6 @@ public class Main extends SimpleApplication {
     @Override
     public void simpleUpdate(float tpf) {
         if (running) {
-            time = game.getTimeLeft();
             if (time <= 0) {
                 System.out.println("RestartGameDemo: simpleUpdate "
                         + "(entering when time is up)");
@@ -142,10 +141,9 @@ class Game extends BaseAppState {
     
     static final float FRICTION_NUMBER = 0.998f;
     
-    private float START_TIME = 30f;
+    private final float START_TIME = 30f;
     
-    private float time = 0f;
-    private float timeLeft = 0f;
+    public float time = START_TIME;
     
     private float lastTpf = 0f;
     
@@ -192,7 +190,7 @@ class Game extends BaseAppState {
         if (needCleaning) {
             System.out.println("(Cleaning up)");
             diskStore.clear();
-            time = 0;
+            players.clear();
             sapp.getRootNode().detachAllChildren();
             needCleaning = false;
         }
@@ -272,6 +270,7 @@ class Game extends BaseAppState {
 
             topNode.attachChild(playerDisk);
         }
+        System.out.println("players added");
     }
     public PlayerDisk getPlayerById(String id) {
         for (int i=0; i<players.size(); i++) {
@@ -295,14 +294,7 @@ class Game extends BaseAppState {
     @Override
     public void update(float tpf) {
         
-        
         //System.out.println(tpf + " tpf");
-        time = time + tpf;
-        
-        timeLeft = START_TIME - time;
-        if(timeLeft<=0){
-            timeLeft = 0;
-        }
         
         
         
@@ -357,8 +349,7 @@ class Game extends BaseAppState {
                         
                         float t = -(p/2) + (float) sqrt((p/2)*(p/2) - q);
                         float t2 = -(p/2) - (float) sqrt((p/2)*(p/2) - q);
-                        System.out.println(t + " t");
-                        System.out.println(t2 + " t2");
+
                         
 
                        
@@ -406,7 +397,7 @@ class Game extends BaseAppState {
             }
             
         }
-        text = text + timeLeft + "\n";
+        text = text + time + "\n";
         hudText.setText(text);
                    
         
@@ -419,7 +410,9 @@ class Game extends BaseAppState {
         return velocity;
     }
     
-    
+    public ArrayList<Disk> getDisks() {
+        return this.diskStore;
+    }
     private Vector3f getRandomVelocity(){
         float velocityX = MIN_VELOCITY_X + random.nextFloat() * (MAX_VELOCITY_X - MIN_VELOCITY_X);
         float velocityY = MIN_VELOCITY_Y + random.nextFloat() * (MAX_VELOCITY_Y - MIN_VELOCITY_Y);
@@ -439,64 +432,9 @@ class Game extends BaseAppState {
     public float getTime(){
         return this.time;
     }
+
+
     
-    public float getTimeLeft(){
-        return this.timeLeft;
-    }
-    
-    
-    class KeyListener implements AnalogListener{
-        
-        ArrayList<KeyTrigger> keys = new ArrayList<KeyTrigger>();
-        PlayerDisk disk;
-        String left, down, right, up;
-        
-        public KeyListener(PlayerDisk disk, String left, String down, String right, String up){
-            this.disk = disk;
-            //this.keys = keys;
-            this.left = left;
-            this.down = down;
-            this.right = right;
-            this.up = up;
-            
-            sapp.getInputManager().addListener(this,left);
-            sapp.getInputManager().addListener(this, down);
-            sapp.getInputManager().addListener(this,right);
-            sapp.getInputManager().addListener(this, up);
-            
-        }
-        
-        public void onAnalog(String name, float value, float tpf){
-    
-            
-            if(name.equals(left)){
-                disk.accLeft(tpf,400f);
-           
-            }
-            
-            if(name.equals(down)){
-                disk.accDown(tpf,400f);
-              
-            }
-            
-            if(name.equals(right)){
-                disk.accRight(tpf, 400f);
-                
-            }
-            
-            if(name.equals(up)){
-                disk.accUp(tpf, 400f);
-                
-            }
-            
-          
-   
-            
-            
-            
-        }
-        
-    }
 }
 
 class Ask extends BaseAppState {

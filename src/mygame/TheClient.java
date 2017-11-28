@@ -34,11 +34,11 @@ public class TheClient extends SimpleApplication {
     private final String hostname; // where the server can be found
     private final int port; // the port att the server that we use
     private Game game;
-    private float time = 0f;
+    private float time = 30f;
     private PlayerDisk localPlayer1, localPlayer2, localPlayer3;
     
     private MessageQueue messageQueue = new MessageQueue();
-    
+    private boolean keysInitialized = false;
     private boolean running = false;
 
     public static void main(String[] args) {
@@ -55,21 +55,23 @@ public class TheClient extends SimpleApplication {
         stateManager.attach(game);
         running=false;
     }
-    private void initGame(int numberOfPlayers, Vector3f[] startingPositions) {
-        if (game.isEnabled()) {
-            //game is already enabled
-            //return;
-            
-        }
+    private void initGame(int numberOfPlayers, Vector3f[] startingPositions, 
+                            Vector3f[] startingVelocities, float time) {
+
         running=true;
         game.spawnPlayers(numberOfPlayers);
         
-        for (int i=0; i<numberOfPlayers; i++) {
-            game.players.get(i).setPosition(startingPositions[i]);
+        for (int i=0; i<startingPositions.length; i++) {
+            game.getDisks().get(i).setPosition(startingPositions[i]);
+            game.getDisks().get(i).setVelocity(startingVelocities[i]);
         }
-
+        this.time=time;
     }
     private void initKeys() {
+        if (keysInitialized) {
+            return;
+        }
+        
         inputManager.addMapping("Left1",  new KeyTrigger(KeyInput.KEY_A));
         inputManager.addMapping("Up1",  new KeyTrigger(KeyInput.KEY_W));
         inputManager.addMapping("Down1",  new KeyTrigger(KeyInput.KEY_S));
@@ -89,7 +91,7 @@ public class TheClient extends SimpleApplication {
         inputManager.addListener(analogListener, "Left1", "Right1", "Up1", "Down1",
                 "Left2", "Right2", "Up2", "Down2","Left3", "Right3", "Up3", "Down3");
         
-        
+        keysInitialized=true;
     }
     
     
@@ -146,6 +148,7 @@ public class TheClient extends SimpleApplication {
         @Override
             public void onAnalog(String name, float value, float tpf) {
                 if (running) {
+
                     if(name.equals("Left1")){
                         localPlayer1.accLeft(tpf,400f);
 
@@ -213,7 +216,8 @@ public class TheClient extends SimpleApplication {
     @Override
     public void simpleUpdate(float tpf) {
        if (running) {
-            time = game.getTimeLeft();
+           time-=tpf;
+           game.time=time;
             if (time <= 0) {           
                 time = 0f;
             }
@@ -291,18 +295,28 @@ public class TheClient extends SimpleApplication {
                  Future result = TheClient.this.enqueue(new Callable() {
                     @Override
                     public Object call() throws Exception {
+                        game.setEnabled(true);
+                        running=true;
                         int numberOfPlayers = ((StartGameMessage) m).playerIDs.length;
                         String[] myIDs = ((StartGameMessage) m).yourIDs;
                         Vector3f[] startingPositions = ((StartGameMessage) m).startPositions;
+                        Vector3f[] startingVelocities = ((StartGameMessage) m).startVelocities;
+                        float serverTime = ((StartGameMessage) m).time;
+                        
                         Util.print("starting game");
-                        initGame(numberOfPlayers, startingPositions);
-                                                
+                        initGame(numberOfPlayers, startingPositions,
+                                startingVelocities, serverTime);
+                        
+                        for (int i=0; i< ((StartGameMessage) m).playerIDs.length; i++) {
+                            System.out.println(((StartGameMessage) m).playerIDs[i]);
+                        }
+                        System.out.println("changing localplayers");
                         localPlayer1 = game.getPlayerById(myIDs[0]);
                         localPlayer2 = game.getPlayerById(myIDs[1]);
                         localPlayer3 = game.getPlayerById(myIDs[2]);
-                        
+                                                
                         initKeys();
-                        
+
                         return true;
                     }
                 });
@@ -315,7 +329,7 @@ public class TheClient extends SimpleApplication {
                     public Object call() throws Exception {
                          Util.print("stopping game");
                          game.setEnabled(false);
-                         running=false;
+                         running=false;                         
                          return true;
                     }
                 });                

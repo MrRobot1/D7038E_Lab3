@@ -37,7 +37,7 @@ public class TheServer extends SimpleApplication {
 
     private Server server;
     private final int port;
-    private float time = 0f;
+    private float time = 30f;
     private MessageQueue messageQueue = new MessageQueue();
     private Game game = new Game();
 
@@ -60,26 +60,35 @@ public class TheServer extends SimpleApplication {
 
     }
     protected void initGame(int numberOfPlayers, int numberOfConnections) {
+        game.setEnabled(true);
         running=true;
+        time=30f;
         System.out.println("2");
         game.spawnPlayers(numberOfPlayers);
         String[] playerIDs = new String[numberOfPlayers];
-        String[] yourIDs = new String[3];
-        Vector3f[] startingPositions = new Vector3f[numberOfPlayers];
+        Vector3f[] startingPositions = new Vector3f[game.getDisks().size()];
+        Vector3f[] startingVelocities = new Vector3f[game.getDisks().size()];
+        
+        for (int i=0; i<startingVelocities.length; i++) {
+            startingPositions[i] = game.getDisks().get(i).getPosition();
+            startingVelocities[i] = game.getDisks().get(i).getVelocity();
+        }
         
         for (int i=0; i<numberOfPlayers; i++) {
             playerIDs[i] = game.players.get(i).id;
-            startingPositions[i] = game.players.get(i).getLocalTranslation();
         }
         for (int i=0; i<numberOfConnections; i++) {
+            String[] yourIDs = new String[3];
+            
             yourIDs[0] = playerIDs[i];
             yourIDs[1] = playerIDs[i+numberOfConnections];
             yourIDs[2] = playerIDs[i+2*numberOfConnections];
 
             StartGameMessage m =new StartGameMessage(playerIDs,
-                    yourIDs, startingPositions);
+                    yourIDs, startingPositions, startingVelocities, time);
             m.destinationID = i;
-
+            System.out.println("CONNECTION "+Integer.toString(i) +
+                    " GETS PLAYER IDS " + yourIDs[0] + yourIDs[1] + yourIDs[2]);
             messageQueue.enqueue(m);
 
         }
@@ -117,7 +126,7 @@ public class TheServer extends SimpleApplication {
     @Override
     public void simpleUpdate(float tpf) {
         if (running) {
-            time = game.getTimeLeft();
+            time-=tpf;
             if (time <= 0) {
                 System.out.println("RestartGameDemo: simpleUpdate "
                         + "(entering when time is up)");
@@ -214,7 +223,7 @@ public class TheServer extends SimpleApplication {
     private class HeartBeatSender implements Runnable {
 
         private final int INITIAL_WAIT = 30000; // time until first loop lap 
-        private final int TIME_SLEEPING = 25000; // timebetween heartbeats
+        private final int TIME_SLEEPING = 45000; // timebetween heartbeats
 
         @Override
         @SuppressWarnings("SleepWhileInLoop")

@@ -23,12 +23,15 @@ public class PlayerDisk extends Disk{
     //private int score;
     public final float MAX_SPEED = 150f;
     public String id;
+    public static int playersCreated;
+    public int objectNumber;
     
     public PlayerDisk(float radius, float height, ColorRGBA color, Vector3f position, Vector3f velocity,AssetManager assetManager, String id){
         
         super(radius, height, color, position, velocity, assetManager);
         this.id=id;
-        
+        playersCreated++;
+        objectNumber = playersCreated;
         Box markerMesh = new Box(1,8,1);
         Geometry markerGeo = new Geometry("FramePart", markerMesh);
         Material markerMat = new Material(this.assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
