@@ -59,8 +59,8 @@ public class PlayerDisk extends Disk{
     public void accLeft(float tpf, float acceleration){
         
         if(this.getVelocity().getX() > -this.MAX_SPEED){
-            velocity.setX(this.getVelocity().getX() - acceleration*tpf);
-          
+            //velocity.setX(this.getVelocity().getX() - acceleration*0.1f*tpf);
+            desiredVelocity.x = (float) (this.desiredVelocity.x - acceleration*tpf);
         }
         
 
@@ -69,7 +69,8 @@ public class PlayerDisk extends Disk{
     public void accDown(float tpf, float acceleration){
   
         if(this.getVelocity().getY() > -this.MAX_SPEED){
-            velocity.setY(this.getVelocity().getY() - acceleration*tpf);
+            //velocity.setY(this.getVelocity().getY() - acceleration*0.1f*tpf);
+            desiredVelocity.y = (float) (this.desiredVelocity.y - acceleration*tpf);
            
         }
 
@@ -78,7 +79,8 @@ public class PlayerDisk extends Disk{
     public void accRight(float tpf, float acceleration){
   
         if(this.getVelocity().getX() < this.MAX_SPEED){
-            velocity.setX(this.getVelocity().getX() +acceleration*tpf);
+           // velocity.setX(this.getVelocity().getX() +acceleration*0.1f*tpf);
+            desiredVelocity.x = (float) (this.desiredVelocity.x + acceleration*tpf);
           
         }
         
@@ -87,12 +89,12 @@ public class PlayerDisk extends Disk{
     public void accUp(float tpf, float acceleration){
       
         if(this.getVelocity().getY() < this.MAX_SPEED){
-            velocity.setY(this.getVelocity().getY() + acceleration*tpf);
+            //velocity.setY(this.getVelocity().getY() + acceleration*0.1f*tpf);
+            desiredVelocity.y = (float) (this.desiredVelocity.y + acceleration*tpf);
            
         }
         
 
     }
-    
-    
+
 }

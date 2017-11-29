@@ -287,7 +287,7 @@ class Game extends BaseAppState {
     @Override
     protected void onDisable() {
         System.out.println("Game: onDisable");
-        
+        sapp.getRootNode().detachAllChildren();
         needCleaning = true;
     }
 
@@ -301,6 +301,23 @@ class Game extends BaseAppState {
         
         for(int i=0; i<diskStore.size();i++){
             Disk disk1 = diskStore.get(i);
+            Vector3f velocity = disk1.getVelocity();
+            Vector3f desiredVelocity = disk1.desiredVelocity;
+
+            float actualX = velocity.x;
+            float actualY = velocity.y;
+
+            float desiredX = desiredVelocity.x;
+            float desiredY = desiredVelocity.y;
+
+            float differenceX = desiredX-actualX;
+            float differenceY = desiredY-actualY;
+
+            disk1.setVelocity(new Vector3f(actualX+0.6f*differenceX, 
+                            actualY+0.6f*differenceY, 0));
+            
+
+            
             float velocityX = (disk1.getVelocity().getX())*FRICTION_NUMBER;
             float velocityY = (disk1.getVelocity().getY())*FRICTION_NUMBER; 
             disk1.setVelocity(new Vector3f(velocityX, velocityY,0));

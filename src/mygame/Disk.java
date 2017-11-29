@@ -24,9 +24,11 @@ public abstract class Disk extends Node{
     static final int AXIS_SAMPLES = 100;
     static final int RADIAL_SAMPLES = 100;
     
-    private Vector3f position; 
+    protected Vector3f position; 
     protected Vector3f velocity;
     protected Vector3f acceleration;
+    public Vector3f desiredVelocity;
+
     protected int score;
     protected float radius;
     private float height;
@@ -54,6 +56,8 @@ public abstract class Disk extends Node{
         this.acceleration = new Vector3f(0,0,0);
         this.mass = (float) Math.PI * radius*radius;
         this.score = 0;
+        this.desiredVelocity = new Vector3f(this.getVelocity().x, this.getVelocity().y, 0);
+
         createDisk(position, color);
         
     }
@@ -123,6 +127,7 @@ public abstract class Disk extends Node{
         return ""+this.score;
     }
     
+        
     public void checkCollide(Vector3f minCoordinates, Vector3f maxCoordinates){
         
         
@@ -130,32 +135,32 @@ public abstract class Disk extends Node{
         if((this.position.getY()-this.radius) < minCoordinates.getY()){         // negate velocity if lower part of disk is under the lowest part of given parameter
             this.setPosition(new Vector3f(this.position.getX(), minCoordinates.getY()+this.radius,0));
             this.velocity.setY(-this.velocity.getY());
-  
+            this.desiredVelocity.y = this.velocity.y;
+
         }
         // Upper
         else if((this.position.getY()+this.radius) > maxCoordinates.getY()){
             this.setPosition(new Vector3f(this.position.getX(), maxCoordinates.getY()-this.radius,0));
             this.velocity.setY(-this.velocity.getY());
+            this.desiredVelocity.y = this.velocity.y;
 
         }
         // Left
         else if((this.position.getX()-this.radius) < minCoordinates.getX()){
             this.setPosition(new Vector3f(minCoordinates.getX()+this.radius, this.position.getY(),0));
             this.velocity.setX(-this.velocity.getX());
-           
+            this.desiredVelocity.x = this.velocity.x;
+
         }
         // Right
         else if((this.position.getX()+this.radius) > maxCoordinates.getX()){
             this.setPosition(new Vector3f(maxCoordinates.getX()-this.radius, this.position.getY(),0));
             this.velocity.setX(-this.velocity.getX());
+            this.desiredVelocity.x = this.velocity.x;
           
         }
         
     }
-    
-    
-
-    
     public void diskCollision(Disk disk, Vector3f prevVelocityDisk1, Vector3f prevVelocityDisk2, Vector3f positionDisk1, Vector3f positionDisk2){
        
         Vector3f disk1Position = positionDisk1;
@@ -191,8 +196,12 @@ public abstract class Disk extends Node{
         this.setVelocity(disk1VelocityVectorPrime);
         disk.setVelocity(disk2VelocityVectorPrime);
         
- 
-            
+        this.desiredVelocity.x = this.velocity.x;
+        this.desiredVelocity.y = this.velocity.y;
+        
+        disk.desiredVelocity.x = disk.velocity.x;
+        disk.desiredVelocity.y = disk.velocity.y;
+     
         this.addToScore(disk.reward(this));
         disk.addToScore(this.reward(disk));
 

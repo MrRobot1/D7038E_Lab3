@@ -9,6 +9,7 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.math.Vector3f;
 import com.jme3.network.Client;
+import com.jme3.network.HostedConnection;
 import com.jme3.network.Message;
 import com.jme3.network.MessageListener;
 import com.jme3.network.Network;
@@ -40,6 +41,16 @@ public class TheClient extends SimpleApplication {
     private MessageQueue messageQueue = new MessageQueue();
     private boolean keysInitialized = false;
     private boolean running = false;
+    private final float ACCFACTOR = 0.9f;
+    
+    private float player1AccelerationLeft, player1AccelerationRight, player1AccelerationUp, 
+            player1AccelerationDown;
+    private float player2AccelerationLeft, player2AccelerationRight, player2AccelerationUp, 
+            player2AccelerationDown;
+    private float player3AccelerationLeft, player3AccelerationRight, player3AccelerationUp, 
+            player3AccelerationDown;
+    
+    
 
     public static void main(String[] args) {
         Util.initialiseSerializables();
@@ -51,7 +62,7 @@ public class TheClient extends SimpleApplication {
         this.hostname = hostname;
         this.port = port;
         game = new Game();
-        game.setEnabled(true);
+        game.setEnabled(false);
         stateManager.attach(game);
         running=false;
     }
@@ -126,7 +137,8 @@ public class TheClient extends SimpleApplication {
                             HeartAckMessage.class,
                             StartGameMessage.class,
                             StopGameMessage.class,
-                            ChangeVelocityMessage.class);
+                            ChangeVelocityMessage.class,
+                            UpdateMessage.class);
 
  
             
@@ -135,6 +147,8 @@ public class TheClient extends SimpleApplication {
             getFlyByCamera().setEnabled(false);
 
             serverConnection.start();
+            new Thread(new NetWrite()).start();
+
             Util.print("Client communication back to server started");
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -151,59 +165,119 @@ public class TheClient extends SimpleApplication {
 
                     if(name.equals("Left1")){
                         localPlayer1.accLeft(tpf,400f);
+                        player1AccelerationLeft+=tpf;
+                        if (player1AccelerationLeft>(ACCFACTOR*tpf)) {
+                            messageQueue.enqueue(new ChangeVelocityMessage(localPlayer1.id, 
+                            player1AccelerationLeft, "Left", localPlayer1.desiredVelocity));
+                        }
+                        //todo check if greater than something
 
                     }
 
                     if(name.equals("Down1")){
                         localPlayer1.accDown(tpf,400f);
+                        player1AccelerationDown+=tpf;
+                        if (player1AccelerationDown>(ACCFACTOR*tpf)) {
+                            messageQueue.enqueue(new ChangeVelocityMessage(localPlayer1.id, 
+                            player1AccelerationDown, "Down", localPlayer1.desiredVelocity));
+                        }
 
                     }
 
                     if(name.equals("Right1")){
                         localPlayer1.accRight(tpf, 400f);
+                        player1AccelerationRight+=tpf;
+                        if (player1AccelerationRight>(ACCFACTOR*tpf)) {
+                            messageQueue.enqueue(new ChangeVelocityMessage(localPlayer1.id, 
+                            player1AccelerationRight, "Right", localPlayer1.desiredVelocity));
+                        }
 
                     }
 
                     if(name.equals("Up1")){
                         localPlayer1.accUp(tpf, 400f);
+                        player1AccelerationUp+=tpf;
+                        if (player1AccelerationUp>(ACCFACTOR*tpf)) {
+                            messageQueue.enqueue(new ChangeVelocityMessage(localPlayer1.id, 
+                            player1AccelerationUp, "Up", localPlayer1.desiredVelocity));
+                        }
 
                     }
                     if(name.equals("Left2")){
                         localPlayer2.accLeft(tpf,400f);
+                        player2AccelerationLeft+=tpf;
+                        if (player2AccelerationLeft>(ACCFACTOR*tpf)) {
+                            messageQueue.enqueue(new ChangeVelocityMessage(localPlayer2.id, 
+                            player2AccelerationLeft, "Left", localPlayer2.desiredVelocity));
+                        }
 
                     }
 
                     if(name.equals("Down2")){
-                        localPlayer2.accDown(tpf,400f);
-
+                        localPlayer2.accDown(tpf, 400f);
+                        player2AccelerationDown+=tpf;
+                        if (player2AccelerationDown>(ACCFACTOR*tpf)) {
+                            messageQueue.enqueue(new ChangeVelocityMessage(localPlayer2.id, 
+                            player2AccelerationDown, "Down", localPlayer2.desiredVelocity));
+                        }
                     }
 
                     if(name.equals("Right2")){
                         localPlayer2.accRight(tpf, 400f);
+                        player2AccelerationRight+=tpf;
+                        if (player2AccelerationRight>(ACCFACTOR*tpf)) {
+                            messageQueue.enqueue(new ChangeVelocityMessage(localPlayer2.id, 
+                            player2AccelerationRight, "Right", localPlayer2.desiredVelocity));
+                        }
 
                     }
 
                     if(name.equals("Up2")){
                         localPlayer2.accUp(tpf, 400f);
+                        player2AccelerationUp+=tpf;
+                        if (player2AccelerationUp>(ACCFACTOR*tpf)) {
+                            messageQueue.enqueue(new ChangeVelocityMessage(localPlayer2.id, 
+                            player2AccelerationUp, "Up", localPlayer2.desiredVelocity));
+                        }
 
                     }
                     if(name.equals("Left3")){
                         localPlayer3.accLeft(tpf,400f);
+                        player3AccelerationLeft+=tpf;
+                        if (player3AccelerationLeft>(10*tpf)) {
+                            messageQueue.enqueue(new ChangeVelocityMessage(localPlayer3.id, 
+                            player3AccelerationLeft, "Left", localPlayer3.desiredVelocity));
+                        }
 
                     }
 
                     if(name.equals("Down3")){
                         localPlayer3.accDown(tpf,400f);
+                        player3AccelerationDown+=tpf;
+                        if (player3AccelerationDown>(ACCFACTOR*tpf)) {
+                            messageQueue.enqueue(new ChangeVelocityMessage(localPlayer3.id, 
+                            player3AccelerationDown, "Down", localPlayer3.desiredVelocity));
+                        }
 
                     }
 
                     if(name.equals("Right3")){
                         localPlayer3.accRight(tpf, 400f);
+                        player3AccelerationRight+=tpf;
+                        if (player3AccelerationRight>(ACCFACTOR*tpf)) {
+                            messageQueue.enqueue(new ChangeVelocityMessage(localPlayer3.id, 
+                            player3AccelerationRight, "Right", localPlayer3.desiredVelocity));
+                        }
 
                     }
 
                     if(name.equals("Up3")){
                         localPlayer3.accUp(tpf, 400f);
+                        player3AccelerationUp+=tpf;
+                        if (player3AccelerationUp>(ACCFACTOR*tpf)) {
+                            messageQueue.enqueue(new ChangeVelocityMessage(localPlayer3.id, 
+                            player3AccelerationUp, "Up", localPlayer3.desiredVelocity));
+                        }
 
                     }
                 }
@@ -337,12 +411,27 @@ public class TheClient extends SimpleApplication {
                  Future result = TheClient.this.enqueue(new Callable() {
                     @Override
                     public Object call() throws Exception {
-                         String s=((ChangeVelocityMessage) m).s;
-                         Util.print(s);
-                         return true;
+                        return true;
                     }
                 });                
-            }else {
+            }else if (m instanceof UpdateMessage) {
+                 Future result = TheClient.this.enqueue(new Callable() {
+                    @Override
+                    public Object call() throws Exception {
+                        for (int i=0; i<((UpdateMessage) m).positions.length; i++) {
+                            game.getDisks().get(i).setPosition(((UpdateMessage) m).positions[i]);
+                            game.getDisks().get(i).setVelocity(((UpdateMessage) m).velocities[i]);
+                        
+                            Disk a = game.getDisks().get(i);
+                                a.desiredVelocity = ((UpdateMessage) m).desiredVelocities[i];
+                            
+                        }
+                        return true;
+                    }
+                });      
+                
+                
+            } else {
                 // must be a programming error(!)
                 throw new RuntimeException("Unknown message.");
             }
@@ -354,5 +443,23 @@ public class TheClient extends SimpleApplication {
     public void destroy() {
         serverConnection.close();
         super.destroy();
+    }
+        private class NetWrite implements Runnable {
+        public void run() {
+            while(true) {
+                try {
+                    Thread.sleep(10); // ... sleep ...
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+       
+                while (!messageQueue.isEmpty()) {
+                    MyAbstractMessage m = messageQueue.pop();
+                    m.setReliable(false);
+                    serverConnection.send(m);
+                }
+                
+            }
+        }
     }
 }

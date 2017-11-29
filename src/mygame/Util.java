@@ -37,6 +37,7 @@ public class Util {
         Serializer.registerClass(StartGameMessage.class);
         Serializer.registerClass(StopGameMessage.class);
         Serializer.registerClass(ChangeVelocityMessage.class);        
+        Serializer.registerClass(UpdateMessage.class);
 
     }
 
@@ -190,16 +191,36 @@ public class Util {
     
     @Serializable
     public static class ChangeVelocityMessage extends MyAbstractMessage {
-        String s;
+        String playerID, direction;
+        Vector3f desiredVelocity;
+        float tpf;
         public ChangeVelocityMessage() {
             
         }
-        public ChangeVelocityMessage(String s) {
-            this.s=s;
+        public ChangeVelocityMessage(String playerID, float tpf, String direction,
+                Vector3f desiredVelocity) {
+            this.playerID=playerID;
+            this.tpf=tpf;
+            this.direction=direction;
+            this.desiredVelocity=desiredVelocity;
         }
         //public ChangeVelocityMessage(int senderID) {
          //   this.senderID = senderID;
         //}
 
 }
+    @Serializable
+    public static class UpdateMessage extends MyAbstractMessage {
+        Vector3f[] positions, velocities, desiredVelocities;
+        public UpdateMessage() {
+            
+        }
+        public UpdateMessage(Vector3f[] positions, Vector3f[] velocities,
+                Vector3f[] desiredVelocities) {
+            this.positions=positions;
+            this.velocities=velocities;
+            this.desiredVelocities=desiredVelocities;
+        }
+
+    }
 }

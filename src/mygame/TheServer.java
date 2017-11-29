@@ -40,7 +40,7 @@ public class TheServer extends SimpleApplication {
     private float time = 30f;
     private MessageQueue messageQueue = new MessageQueue();
     private Game game = new Game();
-
+    private int everyThirdFrame = 0;
 
     private int numberOfPlayers;
     private boolean running = false;
@@ -117,7 +117,7 @@ public class TheServer extends SimpleApplication {
         new Thread(new NetWrite()).start();
         server.addMessageListener(new ServerListener(), ChangeMessage.class,
                 AckMessage.class, HeartMessage.class,
-                HeartAckMessage.class);
+                HeartAckMessage.class, ChangeVelocityMessage.class);
         // add a listener that reacts on incoming network packets
       
         Util.print("ServerListener aktivated and added to server");
@@ -126,6 +126,25 @@ public class TheServer extends SimpleApplication {
     @Override
     public void simpleUpdate(float tpf) {
         if (running) {
+            everyThirdFrame++;
+            if (everyThirdFrame==3) {
+                everyThirdFrame=0;
+                Vector3f[] positions = new Vector3f[game.getDisks().size()];
+                Vector3f[] velocities = new Vector3f[game.getDisks().size()];
+                Vector3f[] desiredVelocities = new Vector3f[game.getDisks().size()];
+                for (int i=0; i<game.getDisks().size(); i++) {
+                    positions[i] = game.getDisks().get(i).getPosition();
+                    velocities[i] = game.getDisks().get(i).getVelocity();
+                    Disk a = game.getDisks().get(i);
+                    desiredVelocities[i] = a.desiredVelocity;
+                    
+                }
+                messageQueue.enqueue(new UpdateMessage(positions, velocities, desiredVelocities));
+            }
+            
+            
+            
+            
             time-=tpf;
             if (time <= 0) {
                 System.out.println("RestartGameDemo: simpleUpdate "
@@ -155,39 +174,33 @@ public class TheServer extends SimpleApplication {
     // this class provides a handler for incoming network packets
     private class ServerListener implements MessageListener<HostedConnection> {
         @Override
-        public void messageReceived(HostedConnection source, Message m) {
-            
-            /*
-            if (m instanceof ChangeMessage) {
-                // forward copies to all clients except the sender
-                ChangeMessage msg = (ChangeMessage) m;
-                Util.print("Getting ChangeMessage from " + msg.getSenderID()
-                        + ", forwarding to all other clients");
-                TheServer.this.server.broadcast(Filters.notEqualTo(source), m);
-            } else if (m instanceof AckMessage) {
-                // forward the ack to the original sender (of the ChangeMessage)
-                AckMessage msg = (AckMessage) m;
-                Util.print("Getting AckMessage from " + msg.getSenderID()
-                        + ", forwarding to " + msg.finalDestinationID);
-                HostedConnection conn
-                        = TheServer.this.server
-                                .getConnection(msg.finalDestinationID);
-                // send it to the client
-                conn.send(m);
-            } else if (m instanceof HeartMessage) {
-                // this indicates a programming error(!)
-                HeartMessage msg = (HeartMessage) m;
-                throw new RuntimeException("Server got a HeartMessage "
-                        +"- should not happen!");
-            } else if (m instanceof HeartAckMessage) {
-                // a client send back an ack - no need to react
-                HeartAckMessage msg = (HeartAckMessage) m;
-                Util.print("Getting HeartAckMessage back from " 
-                        + msg.getSenderID());
-            } else {
-                // this indicates a programming error(!)
-                throw new RuntimeException("Unknown message.");
-            } */
+        public void messageReceived(HostedConnection source, final Message m) {
+            if (m instanceof ChangeVelocityMessage) {
+                
+                Future result = TheServer.this.enqueue(new Callable() {
+                    @Override
+                    public Object call() throws Exception {
+                        PlayerDisk p = game.getPlayerById(((ChangeVelocityMessage) m).playerID);
+
+                        if (((ChangeVelocityMessage) m).direction.equals("Left")) {
+                           // p.accLeft(((ChangeVelocityMessage) m).tpf, 200f);
+                        }
+                        if (((ChangeVelocityMessage) m).direction.equals("Right")) {
+                           // p.accRight(((ChangeVelocityMessage) m).tpf, 200f);
+                        }
+                        if (((ChangeVelocityMessage) m).direction.equals("Up")) {
+                           // p.accUp(((ChangeVelocityMessage) m).tpf, 200f);
+                        }
+                        if (((ChangeVelocityMessage) m).direction.equals("Down")) {
+                            //p.accDown(((ChangeVelocityMessage) m).tpf, 200f);
+                        }
+                        p.desiredVelocity = ((ChangeVelocityMessage) m).desiredVelocity;
+
+                        return true;
+                    }
+                });
+            }
+           
         }
     }
 
@@ -198,6 +211,7 @@ public class TheServer extends SimpleApplication {
      */
     private class NetWrite implements Runnable {
         public void run() {
+            
             while(true) {
                 try {
                     Thread.sleep(10); // ... sleep ...
@@ -206,6 +220,7 @@ public class TheServer extends SimpleApplication {
                 }
                 while (!messageQueue.isEmpty()) {
                     MyAbstractMessage m = messageQueue.pop();
+                    m.setReliable(false);
                     if (m.destinationID!=-1) {
                         HostedConnection conn
                         = TheServer.this.server
