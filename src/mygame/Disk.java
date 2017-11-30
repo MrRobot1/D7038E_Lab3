@@ -14,6 +14,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Cylinder;
+import java.util.ArrayList;
 
 /**
  *
@@ -34,6 +35,8 @@ public abstract class Disk extends Node{
     private float height;
     private float mass;
     private ColorRGBA color;
+    
+    protected ArrayList<Disk> storedActions = new ArrayList<Disk>();
     
     BitmapText velocityText;
    
@@ -202,9 +205,9 @@ public abstract class Disk extends Node{
         disk.desiredVelocity.x = disk.velocity.x;
         disk.desiredVelocity.y = disk.velocity.y;
      
-        this.addToScore(disk.reward(this));
-        disk.addToScore(this.reward(disk));
-
+        //this.addToScore(disk.reward(this));
+        //disk.addToScore(this.reward(disk));
+        this.storedActions.add(disk);
     
         
         

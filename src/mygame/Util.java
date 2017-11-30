@@ -157,17 +157,20 @@ public class Util {
     }
     @Serializable
     public static class StartGameMessage extends MyAbstractMessage {
-        String[] playerIDs, yourIDs;
+        String[] playerIDs;
+        String yourID;
         Vector3f[] startPositions, startVelocities;
         float time;
         
-        public StartGameMessage(String[] playerIDs, String[] yourIDs,
+        public StartGameMessage(String[] playerIDs, String yourID,
                 Vector3f[] startPositions, Vector3f[] startVelocities, float time) {
             this.playerIDs=playerIDs;
-            this.yourIDs=yourIDs;
+            this.yourID=yourID;
             this.startPositions=startPositions;
             this.startVelocities=startVelocities;
             this.time=time;
+            
+            
         }
         
         
@@ -181,8 +184,12 @@ public class Util {
     }
     @Serializable
     public static class StopGameMessage extends MyAbstractMessage {
+        int[] finalScores;
+        
         public StopGameMessage() {
-            
+        }
+        public StopGameMessage(int[] finalScores) {
+            this.finalScores=finalScores;
         }
         public StopGameMessage(int senderID) {
             this.senderID = senderID;
@@ -212,14 +219,18 @@ public class Util {
     @Serializable
     public static class UpdateMessage extends MyAbstractMessage {
         Vector3f[] positions, velocities, desiredVelocities;
+        int[] scores, currentRewards;
+        
         public UpdateMessage() {
             
         }
         public UpdateMessage(Vector3f[] positions, Vector3f[] velocities,
-                Vector3f[] desiredVelocities) {
+                Vector3f[] desiredVelocities, int[] scores, int[] currentRewards) {
             this.positions=positions;
             this.velocities=velocities;
             this.desiredVelocities=desiredVelocities;
+            this.scores=scores;
+            this.currentRewards=currentRewards;
         }
 
     }

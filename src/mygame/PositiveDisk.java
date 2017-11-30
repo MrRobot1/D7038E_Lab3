@@ -19,7 +19,7 @@ import com.jme3.scene.shape.Sphere;
  */
 public class PositiveDisk extends Disk {
     
-    private int currentReward;
+    protected int currentReward;
     private final float MARKER_RADIUS = 1.5f;
     
     

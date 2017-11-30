@@ -54,18 +54,17 @@ public class TheServer extends SimpleApplication {
 
     public TheServer(int port) {
         this.port = port;
-        game.setEnabled(true);
+        game.setEnabled(false);
         running=false;
         stateManager.attach(game);    
 
     }
-    protected void initGame(int numberOfPlayers, int numberOfConnections) {
+    protected void initGame(int numberOfConnections) {
         game.setEnabled(true);
         running=true;
         time=30f;
-        System.out.println("2");
-        game.spawnPlayers(numberOfPlayers);
-        String[] playerIDs = new String[numberOfPlayers];
+        game.spawnPlayers(numberOfConnections);
+        String[] playerIDs = new String[numberOfConnections];
         Vector3f[] startingPositions = new Vector3f[game.getDisks().size()];
         Vector3f[] startingVelocities = new Vector3f[game.getDisks().size()];
         
@@ -74,21 +73,16 @@ public class TheServer extends SimpleApplication {
             startingVelocities[i] = game.getDisks().get(i).getVelocity();
         }
         
-        for (int i=0; i<numberOfPlayers; i++) {
+        for (int i=0; i<numberOfConnections; i++) {
             playerIDs[i] = game.players.get(i).id;
         }
         for (int i=0; i<numberOfConnections; i++) {
-            String[] yourIDs = new String[3];
-            
-            yourIDs[0] = playerIDs[i];
-            yourIDs[1] = playerIDs[i+numberOfConnections];
-            yourIDs[2] = playerIDs[i+2*numberOfConnections];
+            String yourID;
+            yourID = playerIDs[i];
 
             StartGameMessage m =new StartGameMessage(playerIDs,
-                    yourIDs, startingPositions, startingVelocities, time);
+                    yourID, startingPositions, startingVelocities, time);
             m.destinationID = i;
-            System.out.println("CONNECTION "+Integer.toString(i) +
-                    " GETS PLAYER IDS " + yourIDs[0] + yourIDs[1] + yourIDs[2]);
             messageQueue.enqueue(m);
 
         }
@@ -126,20 +120,45 @@ public class TheServer extends SimpleApplication {
     @Override
     public void simpleUpdate(float tpf) {
         if (running) {
+            for (int i=0; i<game.getDisks().size(); i++) {
+                Disk disk1 = game.getDisks().get(i);
+                for (int j=0; j<disk1.storedActions.size(); j++) {
+                    Disk disk2 = disk1.storedActions.get(j);
+                    disk1.addToScore(disk2.reward(disk1));
+                    disk2.addToScore(disk1.reward(disk2));
+                }
+                disk1.storedActions.clear();
+            }
+            
             everyThirdFrame++;
-            if (everyThirdFrame==3) {
+            if (everyThirdFrame==2) {
                 everyThirdFrame=0;
                 Vector3f[] positions = new Vector3f[game.getDisks().size()];
                 Vector3f[] velocities = new Vector3f[game.getDisks().size()];
                 Vector3f[] desiredVelocities = new Vector3f[game.getDisks().size()];
+                
+                int[] currentRewards = new int[8];         
+                int[] scores = new int[game.players.size()];
+                
+                for (int i=0; i<game.players.size(); i++) {
+                    scores[i] = game.players.get(i).score;
+                }
+                int counter = 0;
                 for (int i=0; i<game.getDisks().size(); i++) {
+                    Disk disk1 = game.getDisks().get(i);
+                    if (disk1 instanceof PositiveDisk) {
+                        currentRewards[counter] = ((PositiveDisk) disk1).currentReward;
+                        counter++;
+                    }
+                    
                     positions[i] = game.getDisks().get(i).getPosition();
                     velocities[i] = game.getDisks().get(i).getVelocity();
                     Disk a = game.getDisks().get(i);
                     desiredVelocities[i] = a.desiredVelocity;
                     
                 }
-                messageQueue.enqueue(new UpdateMessage(positions, velocities, desiredVelocities));
+                messageQueue.enqueue(new UpdateMessage(positions, velocities,
+                        desiredVelocities, scores, currentRewards));
             }
             
             
@@ -154,7 +173,11 @@ public class TheServer extends SimpleApplication {
                 running = false;
                 System.out.println("RestartGameDemo: simpleUpdate "
                         + "(leaving with running==false)");
-                messageQueue.enqueue(new StopGameMessage());
+                int[] finalScores = new int[game.players.size()];
+                for (int i=0; i<game.players.size(); i++) {
+                    finalScores[i] = game.players.get(i).score;
+                }
+                messageQueue.enqueue(new StopGameMessage(finalScores));
             }
         }
     }
@@ -255,11 +278,10 @@ public class TheServer extends SimpleApplication {
                 
                 Util.print("Starting game,..");
                 final int numberOfConnections = server.getConnections().size();
-                numberOfPlayers = 3 * numberOfConnections;
                 Future result = TheServer.this.enqueue(new Callable() {
                     @Override
                     public Object call() throws Exception {
-                        initGame(numberOfPlayers, numberOfConnections);
+                        initGame(numberOfConnections);
                         return true;
                     }
                 });

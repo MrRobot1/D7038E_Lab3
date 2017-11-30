@@ -1,5 +1,7 @@
 package mygame;
 import com.jme3.app.SimpleApplication;
+import com.jme3.font.BitmapFont;
+import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.AnalogListener;
@@ -15,6 +17,9 @@ import com.jme3.network.MessageListener;
 import com.jme3.network.Network;
 import com.jme3.renderer.RenderManager;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import mygame.Util.*;
@@ -38,6 +43,7 @@ public class TheClient extends SimpleApplication {
     private float time = 30f;
     private PlayerDisk localPlayer1, localPlayer2, localPlayer3;
     
+    private HudText myText;
     private MessageQueue messageQueue = new MessageQueue();
     private boolean keysInitialized = false;
     private boolean running = false;
@@ -45,10 +51,7 @@ public class TheClient extends SimpleApplication {
     
     private float player1AccelerationLeft, player1AccelerationRight, player1AccelerationUp, 
             player1AccelerationDown;
-    private float player2AccelerationLeft, player2AccelerationRight, player2AccelerationUp, 
-            player2AccelerationDown;
-    private float player3AccelerationLeft, player3AccelerationRight, player3AccelerationUp, 
-            player3AccelerationDown;
+
     
     
 
@@ -72,6 +75,7 @@ public class TheClient extends SimpleApplication {
         running=true;
         game.spawnPlayers(numberOfPlayers);
         
+        
         for (int i=0; i<startingPositions.length; i++) {
             game.getDisks().get(i).setPosition(startingPositions[i]);
             game.getDisks().get(i).setVelocity(startingVelocities[i]);
@@ -87,20 +91,10 @@ public class TheClient extends SimpleApplication {
         inputManager.addMapping("Up1",  new KeyTrigger(KeyInput.KEY_W));
         inputManager.addMapping("Down1",  new KeyTrigger(KeyInput.KEY_S));
         inputManager.addMapping("Right1",  new KeyTrigger(KeyInput.KEY_D));
-        
-        inputManager.addMapping("Left2",  new KeyTrigger(KeyInput.KEY_F));
-        inputManager.addMapping("Up2",  new KeyTrigger(KeyInput.KEY_T));
-        inputManager.addMapping("Down2",  new KeyTrigger(KeyInput.KEY_G));
-        inputManager.addMapping("Right2",  new KeyTrigger(KeyInput.KEY_H));
-        
-        inputManager.addMapping("Left3",  new KeyTrigger(KeyInput.KEY_J));
-        inputManager.addMapping("Up3",  new KeyTrigger(KeyInput.KEY_I));
-        inputManager.addMapping("Down3",  new KeyTrigger(KeyInput.KEY_K));
-        inputManager.addMapping("Right3",  new KeyTrigger(KeyInput.KEY_L));
+
         
                
-        inputManager.addListener(analogListener, "Left1", "Right1", "Up1", "Down1",
-                "Left2", "Right2", "Up2", "Down2","Left3", "Right3", "Up3", "Down3");
+        inputManager.addListener(analogListener, "Left1", "Right1", "Up1", "Down1");
         
         keysInitialized=true;
     }
@@ -148,7 +142,10 @@ public class TheClient extends SimpleApplication {
 
             serverConnection.start();
             new Thread(new NetWrite()).start();
-
+            
+            myText = new HudText(-250,60,ColorRGBA.White, this.assetManager);
+            myText.setText("Connected to server!\n\nWaiting for game...");
+            rootNode.attachChild(myText);
             Util.print("Client communication back to server started");
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -200,88 +197,13 @@ public class TheClient extends SimpleApplication {
                         if (player1AccelerationUp>(ACCFACTOR*tpf)) {
                             messageQueue.enqueue(new ChangeVelocityMessage(localPlayer1.id, 
                             player1AccelerationUp, "Up", localPlayer1.desiredVelocity));
-                        }
-
-                    }
-                    if(name.equals("Left2")){
-                        localPlayer2.accLeft(tpf,400f);
-                        player2AccelerationLeft+=tpf;
-                        if (player2AccelerationLeft>(ACCFACTOR*tpf)) {
-                            messageQueue.enqueue(new ChangeVelocityMessage(localPlayer2.id, 
-                            player2AccelerationLeft, "Left", localPlayer2.desiredVelocity));
-                        }
+                         }
 
                     }
 
-                    if(name.equals("Down2")){
-                        localPlayer2.accDown(tpf, 400f);
-                        player2AccelerationDown+=tpf;
-                        if (player2AccelerationDown>(ACCFACTOR*tpf)) {
-                            messageQueue.enqueue(new ChangeVelocityMessage(localPlayer2.id, 
-                            player2AccelerationDown, "Down", localPlayer2.desiredVelocity));
-                        }
-                    }
-
-                    if(name.equals("Right2")){
-                        localPlayer2.accRight(tpf, 400f);
-                        player2AccelerationRight+=tpf;
-                        if (player2AccelerationRight>(ACCFACTOR*tpf)) {
-                            messageQueue.enqueue(new ChangeVelocityMessage(localPlayer2.id, 
-                            player2AccelerationRight, "Right", localPlayer2.desiredVelocity));
-                        }
-
-                    }
-
-                    if(name.equals("Up2")){
-                        localPlayer2.accUp(tpf, 400f);
-                        player2AccelerationUp+=tpf;
-                        if (player2AccelerationUp>(ACCFACTOR*tpf)) {
-                            messageQueue.enqueue(new ChangeVelocityMessage(localPlayer2.id, 
-                            player2AccelerationUp, "Up", localPlayer2.desiredVelocity));
-                        }
-
-                    }
-                    if(name.equals("Left3")){
-                        localPlayer3.accLeft(tpf,400f);
-                        player3AccelerationLeft+=tpf;
-                        if (player3AccelerationLeft>(10*tpf)) {
-                            messageQueue.enqueue(new ChangeVelocityMessage(localPlayer3.id, 
-                            player3AccelerationLeft, "Left", localPlayer3.desiredVelocity));
-                        }
-
-                    }
-
-                    if(name.equals("Down3")){
-                        localPlayer3.accDown(tpf,400f);
-                        player3AccelerationDown+=tpf;
-                        if (player3AccelerationDown>(ACCFACTOR*tpf)) {
-                            messageQueue.enqueue(new ChangeVelocityMessage(localPlayer3.id, 
-                            player3AccelerationDown, "Down", localPlayer3.desiredVelocity));
-                        }
-
-                    }
-
-                    if(name.equals("Right3")){
-                        localPlayer3.accRight(tpf, 400f);
-                        player3AccelerationRight+=tpf;
-                        if (player3AccelerationRight>(ACCFACTOR*tpf)) {
-                            messageQueue.enqueue(new ChangeVelocityMessage(localPlayer3.id, 
-                            player3AccelerationRight, "Right", localPlayer3.desiredVelocity));
-                        }
-
-                    }
-
-                    if(name.equals("Up3")){
-                        localPlayer3.accUp(tpf, 400f);
-                        player3AccelerationUp+=tpf;
-                        if (player3AccelerationUp>(ACCFACTOR*tpf)) {
-                            messageQueue.enqueue(new ChangeVelocityMessage(localPlayer3.id, 
-                            player3AccelerationUp, "Up", localPlayer3.desiredVelocity));
-                        }
-
-                    }
                 }
             }
+            
     };
 
 
@@ -372,10 +294,11 @@ public class TheClient extends SimpleApplication {
                         game.setEnabled(true);
                         running=true;
                         int numberOfPlayers = ((StartGameMessage) m).playerIDs.length;
-                        String[] myIDs = ((StartGameMessage) m).yourIDs;
+                        String myID = ((StartGameMessage) m).yourID;
                         Vector3f[] startingPositions = ((StartGameMessage) m).startPositions;
                         Vector3f[] startingVelocities = ((StartGameMessage) m).startVelocities;
                         float serverTime = ((StartGameMessage) m).time;
+                        
                         
                         Util.print("starting game");
                         initGame(numberOfPlayers, startingPositions,
@@ -385,9 +308,7 @@ public class TheClient extends SimpleApplication {
                             System.out.println(((StartGameMessage) m).playerIDs[i]);
                         }
                         System.out.println("changing localplayers");
-                        localPlayer1 = game.getPlayerById(myIDs[0]);
-                        localPlayer2 = game.getPlayerById(myIDs[1]);
-                        localPlayer3 = game.getPlayerById(myIDs[2]);
+                        localPlayer1 = game.getPlayerById(myID);
                                                 
                         initKeys();
 
@@ -401,10 +322,32 @@ public class TheClient extends SimpleApplication {
                  Future result = TheClient.this.enqueue(new Callable() {
                     @Override
                     public Object call() throws Exception {
-                         Util.print("stopping game");
-                         game.setEnabled(false);
-                         running=false;                         
-                         return true;
+                        Util.print("stopping game");
+                        running=false;
+                        int[] finalScores;
+
+                        finalScores=((StopGameMessage) m).finalScores;
+                        for (int i=0; i<game.players.size(); i++) {
+                            game.players.get(i).score = finalScores[i];
+                        }
+                        ArrayList<PlayerDisk> players = game.players;
+                        Collections.sort(players, new Comparator<PlayerDisk>(){
+                             public int compare(PlayerDisk p1, PlayerDisk p2){
+                                 
+                                 return p1.score > p2.score ? -1 : 1;
+                             }
+                        }); 
+                        String text = "The winner is Player " + Integer.toString(Integer.parseInt(players.get(0).id.split("Player")[1])+1)+"\n\n";
+                        for (int i=0; i<players.size(); i++) {
+                            text+= Integer.toString(i+1) + " - Player " + 
+                                    Integer.toString(Integer.parseInt(players.get(i).id.split("Player")[1])+1) +
+                                    ": " + Integer.toString(players.get(i).score) + " pts \n";
+                        }
+                        text+= "\n Another game starting soon...";
+                        myText.setText(text);
+                        game.setEnabled(false);
+                        rootNode.attachChild(myText);
+                        return true;
                     }
                 });                
             }else if (m instanceof ChangeVelocityMessage) {
@@ -418,13 +361,29 @@ public class TheClient extends SimpleApplication {
                  Future result = TheClient.this.enqueue(new Callable() {
                     @Override
                     public Object call() throws Exception {
+                        int[] scores = ((UpdateMessage) m).scores;
+                        int[] currentRewards = ((UpdateMessage) m).currentRewards;
+                        int counter = 0;
                         for (int i=0; i<((UpdateMessage) m).positions.length; i++) {
-                            game.getDisks().get(i).setPosition(((UpdateMessage) m).positions[i]);
-                            game.getDisks().get(i).setVelocity(((UpdateMessage) m).velocities[i]);
-                        
-                            Disk a = game.getDisks().get(i);
-                                a.desiredVelocity = ((UpdateMessage) m).desiredVelocities[i];
+                            Disk disk1 = game.getDisks().get(i);
+                            disk1.setPosition(((UpdateMessage) m).positions[i]);
+                            disk1.setVelocity(((UpdateMessage) m).velocities[i]);
+
+                            disk1.desiredVelocity = ((UpdateMessage) m).desiredVelocities[i];
                             
+                            if (disk1 instanceof PositiveDisk) {
+                                while (((PositiveDisk) disk1).currentReward>currentRewards[counter]) {
+                                    PlayerDisk p = new PlayerDisk(30f, 30f-3, ColorRGBA.Blue,
+                                                new Vector3f(0,0,0), new Vector3f(0,0,0),
+                                                 game.sapp.getAssetManager(), "Player0");
+                                    //Disk p = game.players.get(0);
+                                    ((PositiveDisk) disk1).reward(p);
+                                }
+                                counter++;
+                            }
+                        }
+                        for (int i=0; i<game.players.size(); i++) {
+                            game.players.get(i).score = scores[i];
                         }
                         return true;
                     }

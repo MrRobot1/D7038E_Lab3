@@ -105,5 +105,14 @@ public class PlayerDisk extends Disk{
             playerText.setLocalTranslation(-radius/4f, radius/2f, height); // position
             this.attachChild(playerText);
     }
-
+    @Override
+    public String scorePrint(){
+        String number = this.id.split("Player")[1];
+        int n = Integer.parseInt(number);
+        n++;
+        number = Integer.toString(n);
+        
+        return "Player " + number + ": " + Integer.toString(this.score);
+       
+    }
 }

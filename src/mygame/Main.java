@@ -22,6 +22,7 @@ import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Cylinder;
 import com.jme3.scene.Node;
 import static java.lang.Math.sqrt;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -150,7 +151,7 @@ class Game extends BaseAppState {
     private Node topNode;
    
     
-    private SimpleApplication sapp;
+    protected SimpleApplication sapp;
     private boolean needCleaning = false;
     
     //private Node topNode;
@@ -320,8 +321,13 @@ class Game extends BaseAppState {
             
             float velocityX = (disk1.getVelocity().getX())*FRICTION_NUMBER;
             float velocityY = (disk1.getVelocity().getY())*FRICTION_NUMBER; 
-            disk1.setVelocity(new Vector3f(velocityX, velocityY,0));
             
+            float desiredVelocityX = disk1.desiredVelocity.x * FRICTION_NUMBER;
+            float desiredVelocityY = disk1.desiredVelocity.y * FRICTION_NUMBER;
+            
+            disk1.setVelocity(new Vector3f(velocityX, velocityY,0));
+            disk1.desiredVelocity.x = desiredVelocityX;
+            disk1.desiredVelocity.y = desiredVelocityY;
             
             
          
@@ -403,8 +409,8 @@ class Game extends BaseAppState {
             }
         }
         
-        
-        String text = "I : ";
+        DecimalFormat df = new DecimalFormat("#.##");
+        String text = "Time left: " + df.format(time) + "\n\n";
         
         for(int i=0; i<diskStore.size();i++){ 
             if(diskStore.get(i) instanceof PlayerDisk){
@@ -414,7 +420,6 @@ class Game extends BaseAppState {
             }
             
         }
-        text = text + time + "\n";
         hudText.setText(text);
                    
         
