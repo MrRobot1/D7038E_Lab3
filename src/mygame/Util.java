@@ -21,7 +21,7 @@ import com.jme3.network.serializing.Serializer;
 public class Util {
 
     // server locations used by me to test the programs
-    private static final String HOST3 = "127.0.0.1";
+    private static final String HOST3 = "130.240.157.216";
     private static final String HOST2 = "130.240.155.179";
     private static final String HOST1 = "10.0.1.2";
 
