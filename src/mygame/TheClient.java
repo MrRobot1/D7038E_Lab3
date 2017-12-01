@@ -322,6 +322,9 @@ public class TheClient extends SimpleApplication {
                  Future result = TheClient.this.enqueue(new Callable() {
                     @Override
                     public Object call() throws Exception {
+                        if (!game.isEnabled()) {
+                            return true;
+                        }
                         Util.print("stopping game");
                         running=false;
                         int[] finalScores;
@@ -343,7 +346,7 @@ public class TheClient extends SimpleApplication {
                                     Integer.toString(Integer.parseInt(players.get(i).id.split("Player")[1])+1) +
                                     ": " + Integer.toString(players.get(i).score) + " pts \n";
                         }
-                        text+= "\n Another game starting soon...";
+                        text+= "\nAnother game starting soon...";
                         myText.setText(text);
                         game.setEnabled(false);
                         rootNode.attachChild(myText);
@@ -361,6 +364,10 @@ public class TheClient extends SimpleApplication {
                  Future result = TheClient.this.enqueue(new Callable() {
                     @Override
                     public Object call() throws Exception {
+                        if (!game.isEnabled()) {
+                            return true;
+                        }
+                        
                         int[] scores = ((UpdateMessage) m).scores;
                         int[] currentRewards = ((UpdateMessage) m).currentRewards;
                         int counter = 0;

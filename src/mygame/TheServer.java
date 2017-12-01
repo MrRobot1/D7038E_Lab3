@@ -63,6 +63,7 @@ public class TheServer extends SimpleApplication {
         game.setEnabled(true);
         running=true;
         time=30f;
+        
         game.spawnPlayers(numberOfConnections);
         String[] playerIDs = new String[numberOfConnections];
         Vector3f[] startingPositions = new Vector3f[game.getDisks().size()];
@@ -242,16 +243,21 @@ public class TheServer extends SimpleApplication {
                     ex.printStackTrace();
                 }
                 while (!messageQueue.isEmpty()) {
-                    MyAbstractMessage m = messageQueue.pop();
-                    m.setReliable(false);
-                    if (m.destinationID!=-1) {
-                        HostedConnection conn
-                        = TheServer.this.server
-                                .getConnection(m.destinationID);
-                        conn.send(m);
+                    try {
+                        MyAbstractMessage m = messageQueue.pop();
+                        m.setReliable(false);
+                        if (m.destinationID!=-1) {
+                            HostedConnection conn
+                            = TheServer.this.server
+                                    .getConnection(m.destinationID);
+                            conn.send(m);
+                        }
+                        else {
+                            server.broadcast(m);
+                        }
                     }
-                    else {
-                        server.broadcast(m);
+                    catch (Exception e) {
+                        //lol
                     }
                 }
                 
