@@ -25,11 +25,13 @@ import java.util.concurrent.Future;
 import mygame.Util.*;
 
 /**
- * This program demonstrates networking in JMonkeyEngine using SpiderMonkey, and
- * contains the client.
  *
- *
- * @author hj
+ * @author Anton Eliasson, Jonathan Olsson, Olof Enström
+ * 
+ * The game client for lab 3. Based on example by Håkan Jonsson.
+ * 
+ * Connects to server specified in Util, starts a game and communicates with server for 
+ * different updates.
  */
 public class TheClient extends SimpleApplication {
 

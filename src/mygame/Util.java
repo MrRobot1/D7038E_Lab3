@@ -12,11 +12,11 @@ import com.jme3.network.serializing.Serializable;
 import com.jme3.network.serializing.Serializer;
 
 /**
- * This is a utility class for use by the other classes. 
+ * Based on example by Håkan Jonsson
+ * 
+ * Still has classes and attributes that are unused. 
  *
- * A major feature is that the types of messages are defined in this class. 
- *
- * @author hj 
+ * @author Anton Eliasson, Jonathan Olsson, Olof Enström
  */
 public class Util {
 
